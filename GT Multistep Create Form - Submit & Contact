@@ -1,0 +1,193 @@
+//Add First Breadcrumb to Step 2 of SIF: 
+let displayFirstBreadcrumb = function(){
+ let imgPath =  `/GT-Site-Visits-Multistep-Form/GT-Breadcrumbs_0`;
+ 
+    $("li").each(function(){
+        let curr_index = $(this).index();
+        let active_index = $(".active").index();
+
+        if($(this).hasClass("active")){
+          $("li:not(.active)").addClass("hidden");
+            $(this).addClass("new-breadcrumb-active").removeClass("active"); 
+            $(this).html(`<img src=${imgPath}${curr_index}.png>`); 
+            console.log("This is the dynamic function");
+        };
+  
+ if(curr_index > active_index ){
+            console.log(curr_index + "vs" + active_index );
+            $(this).addClass("hidden");
+        }
+
+        if(curr_index < active_index ){
+            console.log(curr_index + "vs" + active_index );
+            $(this).addClass("hidden");
+        }
+
+    });
+};
+
+
+
+
+if (window.jQuery) {
+   (function ($) {
+      $(document).ready(function () {
+
+     displayFirstBreadcrumb();
+
+    //alert("TESTING - Step 9 - Submit & Contact");
+
+
+         $("#gt_submissiondate").closest("tr").hide(); 
+         $("#gt_inspectionstatus").closest("tr").hide(); 
+         var InspectionStatusValue =  $("#gt_inspectionstatus").val();  
+         //alert(InspectionStatusValue);
+
+         // All form fields and subgrids would turn to raady only if Inspection Status = Submitted
+         if (InspectionStatusValue == "122850001") { 
+            applyAllReadOnlyFixes();
+         } 
+
+
+///////////
+
+        // 1. function to turn the whole form to readyo only
+        function applyAllReadOnlyFixes() {
+            // A. INJECT GLOBAL CSS (Updated with your specific classes from the screenshot)
+            $("<style>")
+                .prop("type", "text/css")
+                .html(`
+                    /* 1. Target the 'Choose File' button classes */
+                    .btn-for-image-input, .btn-for-inputofimage, input[type='file'] {
+                        display: none !important;
+                    }
+
+                    /* 2. Target the 'Delete' button using its specific classes from your DOM */
+                    .buttonfordeleteimage, .btnforimage, [id$='_delete_button'] { 
+                        display: none !important; 
+                        visibility: hidden !important;
+                        pointer-events: none !important;
+                    }
+
+                    /* 3. Hide the container to be safe */
+                    .image-inline button { display: none !important; }
+
+                    /* 4. Visual feedback for read-only multi-selects */
+                    .msos-container, .ms-BasePicker-text, .choices__inner { 
+                        pointer-events: none !important; 
+                        background-color: #f3f3f3 !important; 
+                    }
+                    .ms-TagItem-close, .choices__button { display: none !important; }
+                `)
+                .appendTo("head");
+
+            // B. STANDARD DATA FIELDS
+            $(".entity-form, .metadata-form").find("input, select, textarea").each(function () {
+                $(this).css({
+                    "pointer-events": "none",
+                    "background-color": "#f3f3f3",
+                    "cursor": "not-allowed"
+                }).attr("tabindex", "-1");
+
+                if ($(this).hasClass("lookup")) {
+                    $(this).siblings(".input-group-btn").hide();
+                }
+            });
+
+            // C. SUBGRIDS
+            $(".entity-grid").on("loaded", function () {
+                $(this).find(".grid-actions, .dropdown-menu, .btn-default.btn-xs").hide();
+            });
+
+
+
+           // Target the Submit/Next button by ID and the custom class seen in your screenshot
+           $("#NextButton, .submit-btn").prop("disabled", true).css({
+                "opacity": "0.5",
+                "cursor": "not-allowed",
+             "pointer-events": "none"
+           });
+
+
+
+
+
+            // D. PERSISTENCE (Observer) - Updated for your specific Delete button
+            var observer = new MutationObserver(function () {
+                // Target specifically the 'buttonfordeleteimage' class from your screenshot
+                $(".buttonfordeleteimage, [id$='_delete_button']").hide();
+        
+                // Hide the choose file button classes
+                $(".btn-for-image-input, .btn-for-inputofimage").hide();
+        
+                // Keep multi-selects clean
+                $(".ms-TagItem-close, .choices__button").hide();
+            });
+
+            var formNode = document.querySelector('.entity-form');
+            if (formNode) {
+                observer.observe(formNode, { childList: true, subtree: true });
+            }
+        }
+
+        // End of function  applyAllReadOnlyFixes()
+
+        // 2. function to mimic "Next" button styling to "Close" button
+
+        setTimeout(function() {
+            // 1. Inject CSS with INCREASED margin-left
+            $("<style>")
+                .prop("type", "text/css")
+                .html(`
+                    .custom-oval-btn {
+                        background: linear-gradient(to bottom, #76a049 0%, #588233 100%) !important;
+                        border-radius: 100px !important;
+                        border: 4px solid #000000 !important;
+                        box-shadow: inset 0 0 0 3px #ffffff !important;
+                        color: #ffffff !important;
+                        font-weight: bold !important;
+                        font-size: 18px !important; /* <--- ADDED THIS LINE */                        
+                        padding: 10px 0 !important;
+                        min-width: 140px !important; 
+                        display: inline-block !important;
+                        cursor: pointer;
+                        outline: none;
+                        margin-left: 10px !important; /* Increased from 10px to 35px */
+                        text-align: center;
+                        transition: background 0.2s ease;
+                    }
+                    .custom-oval-btn:hover {
+                        background: linear-gradient(to bottom, #999999 0%, #666666 100%) !important;
+                        color: #ffffff !important;
+                    }
+                `)
+                .appendTo("head");
+
+            // 2. Create the Close button
+            var $wrapper = $('<div class="btn-group"></div>');
+            var $closeBtn = $('<input type="button" value="Close" id="myCloseBtn" class="btn btn-primary button next submit-btn custom-oval-btn" />');
+            $wrapper.append($closeBtn);
+
+            // 3. Inject it next to the 'Next' button
+            var $nextBtnParent = $(".actions input.next").parent();
+    
+            if ($nextBtnParent.length > 0) {
+                $nextBtnParent.after($wrapper);
+            } else {
+                $(".actions").append($wrapper);
+            }
+
+            // 4. Click Event for Redirection
+            $(document).on("click", "#myCloseBtn", function() {
+                //window.location.href = '/GT-Site-Inspections-View';
+                window.location.href = '/GT-Site-Visit-View/';
+            });
+
+        }, 500);    
+        
+        // End of setTimeout function
+         
+
+      });
+   }(window.jQuery));
+}
