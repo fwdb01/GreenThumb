@@ -1,0 +1,372 @@
+const StreetTreeBedsOtherMaterialsFieldName = "gt_streettreebedsothermaterials";
+const OtherTreeGuardsConditionFieldName = "gt_othertreeguardscondition";
+const TreeBedsNotesFieldName = "gt_treebedsnotes";
+
+
+// Function to make a field required and add a custom validator
+var MakeRequired = function (fieldName) {
+    
+    try {
+        if ($("#" + fieldName) != undefined) {
+            
+            $("#" + fieldName).prop('required', true);
+            $("#" + fieldName).closest(".control").prev().addClass("required");
+
+            var Requiredvalidator = document.createElement('span');
+            Requiredvalidator.style.display = "none";
+            Requiredvalidator.id = fieldName + "Validator";
+            Requiredvalidator.controltovalidate = fieldName;
+            Requiredvalidator.errormessage = `<a href='#${fieldName}_label'>${$(`#${fieldName}_label`).html()} is a required field.</a>`;
+            Requiredvalidator.initialvalue = "";
+            Requiredvalidator.evaluationfunction = function (){
+                var value = $("#" + fieldName).val();
+                if (value == null || value == "") {
+                    return false;
+                }else {
+                    return true;
+                }
+            };
+
+            // Add the new validator to the page validators array:
+            var duplicateFlag = false;
+            if(Page_Validators.length > 0){
+         
+                for(let i = 0; i < Page_Validators.length; i++){
+                    
+                    let currentItem = Page_Validators[i].id;
+                    
+                    if(Requiredvalidator.id == currentItem){
+                        duplicateFlag = true;
+                    }
+                }
+            }
+
+            if(duplicateFlag === false){
+                Page_Validators.push(Requiredvalidator);
+            }  
+        }
+    }
+    catch (error) {
+        errorHandler(error);
+    }
+             
+}
+
+// Function to make a field not required and remove the custom validator
+var MakeNotRequired = function (fieldName) {
+    try {
+        if ($("#" + fieldName) != undefined) {
+            $("#" + fieldName).closest(".control").prev().removeClass("required");
+            $("#" + fieldName).prop('required', false);
+
+            for (i = 0; i < Page_Validators.length; i++) {
+                if (Page_Validators[i].id == fieldName + "Validator") {
+                   
+                    Page_Validators.splice(i, 1);
+                    break; // Once found and removed, exit the loop
+                }
+            }
+        }
+    }
+    catch (error) {
+        errorHandler(error);
+    }
+}
+
+
+if (window.jQuery) {
+   (function ($) {
+
+// Start of Sidewalk Conditions & Photos Subgrid handling 
+
+            // Override the default validation function
+            webFormClientValidate = function () {
+
+
+                // Define your 4 subgrids and their friendly names
+                var subgridsToValidate = [
+                    { id: "Sidewalk_Subgrid", name: "Sidewalk Conditions & Photos" }
+                ];
+
+                for (var i = 0; i < subgridsToValidate.length; i++) {
+                    var subgrid = subgridsToValidate[i];
+            
+                    // Check if subgrid has records (header only = 1 row)
+                    if ($("#" + subgrid.id + " tr").length <= 1) {
+                        showValidationModal("Please add at least one record to the " + subgrid.name + " section.", subgrid.id);
+                        return false; // Stop at the first error found
+                    }
+                }
+
+// End of Sidewalk Conditions & Photos Subgrid 
+
+                return true; // Allow navigation
+            };
+   
+
+// End of Subgrid handling
+
+
+
+      $(document).ready(function () {
+   
+
+ //alert("JNG - TESTING - Step 3 Perimeter & Signage");
+
+         $("#gt_inspectionstatus").closest("tr").hide(); 
+         var InspectionStatusValue =  $("#gt_inspectionstatus").val();  
+         //alert(InspectionStatusValue);
+
+         // All form fields and subgrids would turn to raady only if Inspection Status = Submitted
+         if (InspectionStatusValue == "122850001") { 
+            applyAllReadOnlyFixes();
+         } 
+               
+        // 1. Append a single generic modal to the body
+        var modalHtml = `
+        <div class="modal fade" id="universalModal" tabindex="-1" role="dialog">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header"><h4 class="modal-title">Action Required</h4></div>
+              <div id="universalModalBody" class="modal-body"></div>
+              <div class="modal-footer">
+                <!--
+                <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+                -->
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+        $('body').append(modalHtml);
+
+        // 2. Helper function to show modal and focus subgrid
+        window.showValidationModal = function(message, subgridId) {
+            $('#universalModalBody').text(message);
+            $('#universalModal').modal('show');
+    
+            // Focus subgrid once user clicks OK
+            $('#universalModal').one('hidden.bs.modal', function () {
+                setTimeout(function() {
+                    // 1. Try to find the actual grid table inside the container
+                    var $grid = $("#" + subgridId).find(".entity-grid, .view-grid").first();
+            
+                    // 2. If the grid is empty, focus the "Add/Create" button so the user can take action
+                    var $addButton = $("#" + subgridId).find(".btn-primary, .action-link").first();
+
+                    if ($addButton.length > 0) {
+                        $addButton.focus(); // Best for UX: focus the button to add a record
+                    } else if ($grid.length > 0) {
+                        $grid.attr("tabindex", -1).focus(); // Fallback: focus the table
+                    } else {
+                        // Last resort: focus the main container
+                        $("#" + subgridId).attr("tabindex", -1).focus();
+                    }
+                }, 200); // 200ms delay helps ensure the modal is fully cleared
+            });
+        };
+
+
+        // 3. Start of Input Event Handlers
+
+        $("#gt_numberofemptystreettreebeds").on("input", function () {
+            // Remove any character that is not a digit (0-9)
+            this.value = this.value.replace(/\D/g, '');
+        });    
+
+
+        //  End of Input Event Handlers
+
+        // 4. Initial check when form loads 
+            toggleTreeGuardRelatedFields(); 
+
+ 
+        // 5. Bind change event to the Choice fields
+        $("#gt_treeguard").change(function() {
+            toggleTreeGuardRelatedFields(); 
+        });
+    
+        // 6. Functions to toggle visibility and required status of dependent fields
+
+        // Function to toggle Other Access Method visibility
+        function toggleTreeGuardRelatedFields() {
+            var selectedValue =  $("#gt_treeguard").val();
+
+            // Check for 'No' value or no value selected (Tree Guard)
+            if  (selectedValue == "122850000" || selectedValue == "") { 
+                $("#gt_streettreebedsothermaterials").val('');
+                $("#gt_streettreebedsothermaterials").hide();
+                $("#gt_streettreebedsothermaterials_label").hide(); 
+                MakeNotRequired(StreetTreeBedsOtherMaterialsFieldName);
+
+                $("#gt_othertreeguardscondition").val('');
+                $("#gt_othertreeguardscondition").hide();
+                $("#gt_othertreeguardscondition_label").hide(); 
+                MakeNotRequired(OtherTreeGuardsConditionFieldName);
+
+                $("#gt_treebedsnotes").val('');
+                $("#gt_treebedsnotes").hide();
+                $("#gt_treebedsnotes_label").hide();   
+                MakeNotRequired(TreeBedsNotesFieldName);          
+
+            // Check for 'Other' value (Tree Guard)
+            }   else if (selectedValue == "122850007") {
+                $("#gt_streettreebedsothermaterials").show();
+                $("#gt_streettreebedsothermaterials_label").show();
+                MakeRequired(StreetTreeBedsOtherMaterialsFieldName);
+            
+                $("#gt_othertreeguardscondition").show();
+                $("#gt_othertreeguardscondition_label").show(); 
+                MakeRequired(OtherTreeGuardsConditionFieldName);
+
+                $("#gt_treebedsnotes").show();
+                $("#gt_treebedsnotes_label").show(); 
+                MakeRequired(TreeBedsNotesFieldName);
+
+            }
+            // Check for All 'Yes' values (Tree Guard)(); 
+            else {
+                $("#gt_streettreebedsothermaterials").val('');
+                $("#gt_streettreebedsothermaterials").hide();
+                $("#gt_streettreebedsothermaterials_label").hide(); 
+                MakeNotRequired(StreetTreeBedsOtherMaterialsFieldName);
+            
+                $("#gt_othertreeguardscondition").show();
+                $("#gt_othertreeguardscondition_label").show(); 
+                MakeRequired(OtherTreeGuardsConditionFieldName);
+
+                $("#gt_treebedsnotes").show();
+                $("#gt_treebedsnotes_label").show(); 
+                MakeRequired(TreeBedsNotesFieldName);
+            
+            }
+        }   
+ 
+        //  End of toggle functions
+
+        // 7. function to turn the whole form to ready only0
+
+        function applyAllReadOnlyFixes() {
+            // 1. REGULAR FIELDS, LOOKUPS & NUMERIC FIELDS
+            $(".entity-form, .metadata-form").find("input, select, textarea").each(function () {
+                var $field = $(this);
+                
+                $field.css({
+                    "pointer-events": "none",
+                    "background-color": "#f3f3f3",
+                    "cursor": "not-allowed"
+                }).attr("tabindex", "-1");
+
+                // Target Lookup fields and completely remove the button DOM content
+                if ($field.hasClass("lookup") || $field.attr("data-control-type") === "lookup") {
+                    var $parentGroup = $field.closest('.input-group');
+                    $parentGroup.find('.input-group-btn, .input-group-append, .clearlookupfield, .launchmodal, .lookup-btn, .launchentitylookup').empty().hide();
+                    
+                    // Visual corner fix to restore rounded edges
+                    $field.css({
+                        "border-top-right-radius": "4px",
+                        "border-bottom-right-radius": "4px"
+                    });
+                }
+
+                // Target Whole Number / Integer / Decimal fields explicitly
+                if ($field.attr("type") === "number" || $field.hasClass("integer") || $field.hasClass("decimal")) {
+                    // Apply strict read-only attribute to prevent keyboard/spinner changes
+                    $field.attr("readonly", "readonly");
+                }
+            });
+
+            // 2. MULTI-SELECT & PCF CONTROLS
+            var multiSelectSelectors = ".ms-TagItem-close, .ms-BasePicker-input, .ms-ComboBox-Input, .msos-container, .ms-BasePicker-text, .choices__inner";
+            $(multiSelectSelectors).css({
+                "pointer-events": "none",
+                "background-color": "#f3f3f3",
+                "cursor": "not-allowed"
+            });
+            $(".ms-TagItem-close, .choices__button, .msos-selected-display-item-close").hide();
+
+            // 3. SUBGRIDS
+            $(".entity-grid").on("loaded", function () {
+                $(this).find(".grid-actions").hide(); 
+                $(this).find(".dropdown-menu").remove(); 
+                $(this).find(".btn-default.btn-xs").hide(); 
+            });
+
+            // 4. PERSISTENCE (MutationObserver)
+            var observer = new MutationObserver(function () {
+                $(multiSelectSelectors).css({
+                    "pointer-events": "none",
+                    "background-color": "#f3f3f3"
+                });
+                $(".ms-TagItem-close, .choices__button").hide();
+                
+                $('.entity-form .lookup, .metadata-form .lookup').closest('.input-group')
+                    .find('.input-group-btn, .input-group-append, .clearlookupfield, .launchmodal, .lookup-btn, .launchentitylookup').empty().hide();
+            });
+
+            var formNode = document.querySelector('.entity-form') || document.querySelector('.metadata-form');
+            if (formNode) {
+                observer.observe(formNode, { childList: true, subtree: true });
+            }
+        }
+
+        // End of function  applyAllReadOnlyFixes()
+
+
+        // 8. function to mimic "Next" button styling to "Close" button
+        setTimeout(function() {
+            // 1. Inject CSS with INCREASED margin-left
+            $("<style>")
+                .prop("type", "text/css")
+                .html(`
+                    .custom-oval-btn {
+                        background: linear-gradient(to bottom, #76a049 0%, #588233 100%) !important;
+                        border-radius: 100px !important;
+                        border: 4px solid #000000 !important;
+                        box-shadow: inset 0 0 0 3px #ffffff !important;
+                        color: #ffffff !important;
+                        font-weight: bold !important;
+                        font-size: 18px !important; /* <--- ADDED THIS LINE */                        
+                        padding: 10px 0 !important;
+                        min-width: 140px !important; 
+                        display: inline-block !important;
+                        cursor: pointer;
+                        outline: none;
+                        margin-left: 10px !important; /* Increased from 10px to 35px */
+                        text-align: center;
+                        transition: background 0.2s ease;
+                    }
+                    .custom-oval-btn:hover {
+                        background: linear-gradient(to bottom, #999999 0%, #666666 100%) !important;
+                        color: #ffffff !important;
+                    }
+                `)
+                .appendTo("head");
+
+            // 2. Create the Close button
+            var $wrapper = $('<div class="btn-group"></div>');
+            var $closeBtn = $('<input type="button" value="Close" id="myCloseBtn" class="btn btn-primary button next submit-btn custom-oval-btn" />');
+            $wrapper.append($closeBtn);
+
+            // 3. Inject it next to the 'Next' button
+            var $nextBtnParent = $(".actions input.next").parent();
+    
+            if ($nextBtnParent.length > 0) {
+                $nextBtnParent.after($wrapper);
+            } else {
+                $(".actions").append($wrapper);
+            }
+
+            // 4. Click Event for Redirection
+            $(document).on("click", "#myCloseBtn", function() {
+                //window.location.href = '/GT-Site-Inspections-View';
+                window.location.href = '/GT-Site-Visit-View/';
+            });
+
+        }, 500);    
+        // End of setTimeout function
+
+
+      });
+   }(window.jQuery));
+}
