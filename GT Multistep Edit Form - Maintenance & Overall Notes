@@ -1,0 +1,385 @@
+const AwardConsiderationFieldName = "gt_awardconsideration";                                                        //Q194
+const AwardConsiderationNotesFieldName = "gt_awardconsiderationnotes";                                              //Q194c
+const GardenRecommendedForVolunteerWorkdayDetailsFieldName = "gt_gardenrecommendedforvolunteerworkdaydetails";      //Q195a
+
+var MakeRequired = function (fieldName) {
+    
+    try {
+        if ($("#" + fieldName) != undefined) {
+            
+            $("#" + fieldName).prop('required', true);
+            $("#" + fieldName).closest(".control").prev().addClass("required");
+
+            var Requiredvalidator = document.createElement('span');
+            Requiredvalidator.style.display = "none";
+            Requiredvalidator.id = fieldName + "Validator";
+            Requiredvalidator.controltovalidate = fieldName;
+            Requiredvalidator.errormessage = `<a href='#${fieldName}_label'>${$(`#${fieldName}_label`).html()} is a required field.</a>`;
+            Requiredvalidator.initialvalue = "";
+            Requiredvalidator.evaluationfunction = function (){
+                var value = $("#" + fieldName).val();
+            
+                if (value == null || value == "") {
+                    return false;
+                }else {
+                    return true;
+                }
+            };
+
+            // Add the new validator to the page validators array:
+            var duplicateFlag = false;
+            if(Page_Validators.length > 0){
+                for(let i = 0; i < Page_Validators.length; i++){
+                    
+                    let currentItem = Page_Validators[i].id;
+                    
+                    if(Requiredvalidator.id == currentItem){
+                        duplicateFlag = true;
+                    }
+                }
+            }
+
+            if(duplicateFlag === false){
+                 Page_Validators.push(Requiredvalidator);
+            }  
+        }
+    }
+    catch (error) {
+        errorHandler(error);
+    }
+             
+}
+
+var MakeNotRequired = function (fieldName) {
+    try {
+        if ($("#" + fieldName) != undefined) {
+            $("#" + fieldName).closest(".control").prev().removeClass("required");
+            $("#" + fieldName).prop('required', false);
+            for (i = 0; i < Page_Validators.length; i++) {
+                if (Page_Validators[i].id == fieldName + "Validator") {
+                   
+                    Page_Validators.splice(i, 1);
+                    break; // Once found and removed, exit the loop
+                }
+            }
+        }
+    }
+    catch (error) {
+        errorHandler(error);
+    }
+}
+
+
+
+if (window.jQuery) {
+   (function ($) {
+      $(document).ready(function () {
+
+//alert("JNG - TESTING - Step 8 Maintenance & Overall Notes");
+
+
+         $("#gt_inspectionstatus").closest("tr").hide(); 
+         var InspectionStatusValue =  $("#gt_inspectionstatus").val();  
+         //alert(InspectionStatusValue);
+
+         // All form fields and subgrids would turn to raady only if Inspection Status = Submitted
+         if (InspectionStatusValue == "122850001") { 
+            applyAllReadOnlyFixes();
+         } 
+
+         
+        // 1. Initial check when form loads 
+
+        toggleAwardConsideration();
+        toggleGardenRecommendedForVolunteerWorkdayDetails();
+
+
+        //  Generic function to handle multiple fields with similar show/hide logic based on multi-select choices
+
+
+        // 2. Configuration: List your fields and trigger values
+        var fieldConfigs = [
+            { 
+                multiSelect: "gt_awardconsideration", 
+                textField: "gt_awardconsiderationnotes", 
+                triggerValues: ["122850000", "122850001", "122850002", "122850003", "122850004", "122850005", "122850006", "122850007", "122850008", "122850009", "122850010", "122850011", "122850012"], // Add multiple values here
+                textFieldName: AwardConsiderationNotesFieldName
+            }
+        ];
+
+        // 3. Initialize and start watching for changes
+        fieldConfigs.forEach(function (config) {
+            // Run once on load
+            toggleFieldVisibility(config);
+
+            // Start watching the hidden input for changes
+            var targetNode = document.getElementById(config.multiSelect);
+            if (targetNode) {
+                var observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.attributeName === "value") {
+                            toggleFieldVisibility(config);
+                        }
+                    });
+                });
+                observer.observe(targetNode, { attributes: true });
+            }
+        });
+
+        function toggleFieldVisibility(config) {
+            var $multiSelect = $("#" + config.multiSelect);
+            var valAttr = $multiSelect.attr("value"); // Use .attr("value") for Dataverse hidden inputs
+            var isVisible = false;
+
+            if (valAttr && valAttr !== "") {
+                try {
+                    // Parse the JSON array of selected objects
+                    var selectedObjects = JSON.parse(valAttr);
+                    var selectedValues = selectedObjects.map(item => String(item.Value));
+                
+                    // Check if ANY selected value is in the triggerValues list
+                    isVisible = selectedValues.some(val => config.triggerValues.includes(val));
+                } catch (e) {
+                    console.error("Error parsing multiselect JSON:", e);
+                }
+            }
+
+            // Target the row (tr) and label to hide the entire field section
+            var $targetField = $("#" + config.textField);
+            var $label = $("#" + config.textField + "_label");
+            var $row = $targetField.closest('tr');
+
+            if (isVisible) {
+                $row.show();
+                $label.show();
+                $targetField.show();
+                // JNG TEST
+                if(config.textFieldName) {  
+                    MakeRequired(config.textFieldName);
+
+                    if (config.textFieldName == "gt_otherinformationboard") {
+
+                        // This finds any label that starts with your field name
+                        $('label[id^="gt_otherinformationboard"]').each(function() {
+                            if ($(this).find(".required").length === 0) {
+                                $(this).append('<span class="required" style="color: red;"> *</span>');
+                            }
+                        });
+
+                    }
+                }
+            } else {
+                $row.hide();
+                $label.hide();
+
+
+                // Optional: Clear the text field value when hidden
+                $targetField.val(""); 
+
+                // JNG TEST
+                if(config.textFieldName) {  
+                    MakeNotRequired(config.textFieldName);
+                }
+            }
+        }       
+        //  End of generic function for multi-select fields    
+    
+        // 4. Bind change event to the Choice fields 
+
+        $("#gt_gardenpolicyenforcement").change(function() {        
+           toggleAwardConsideration();
+        });  
+
+        $("#gt_gardenrecommendedforvolunteerworkday").change(function() {        
+            toggleGardenRecommendedForVolunteerWorkdayDetails();
+        });
+
+        // 5. Functions to toggle visibility and required status of dependent fields
+
+        // Function to toggle Garden Policy Enforcement visibility and required status of Award Consideration
+        function toggleAwardConsideration() {
+            var selectedValue =  $("#gt_gardenpolicyenforcement").val();    
+            // Check for "No, they're doing great and deserve some special recognition" value (garden policy enforcement)
+            if (selectedValue == "122850004") { 
+                $("#gt_awardconsideration").show();
+                $("#gt_awardconsideration_label").show(); 
+                MakeRequired(AwardConsiderationFieldName);
+            
+                $("#gt_awardconsideration").closest("tr").show();  
+
+           
+            } else {
+            
+                $("#gt_awardconsideration").closest('tr').hide();
+                $("#gt_awardconsideration_label").hide();
+
+                var $field = $("#gt_awardconsideration");
+                var $container = $("#gt_awardconsideration_Container");
+
+                // 1. Clear the actual data value
+                $field.val('');
+
+                // 2. Uncheck all internal checkboxes if rendered as a list
+                $container.find('input.msos-checkbox').prop('checked', false);
+
+                // 3. Remove visual "selected" tags from the UI
+                $container.find('.msos-selected-display-item').remove();
+
+                // 4. Notify the system of the change
+                $field.trigger('change');
+
+                MakeNotRequired(AwardConsiderationFieldName);
+
+            }   
+        }
+
+
+        // Function to toggle Garden Recommended for Volunteer Workday Details visibility
+        function toggleGardenRecommendedForVolunteerWorkdayDetails() {
+            var selectedValue =  $("#gt_gardenrecommendedforvolunteerworkday").val();   
+            if (selectedValue == "122850000") { // Check for 'Yes' value
+
+                $("#gt_gardenrecommendedforvolunteerworkdaydetails").show(); 
+                $("#gt_gardenrecommendedforvolunteerworkdaydetails_label").show(); 
+                $("#gt_gardenrecommendedforvolunteerworkdaydetails").closest("tr").show(); 
+        
+                MakeRequired(GardenRecommendedForVolunteerWorkdayDetailsFieldName); 
+
+            } else {
+                $("#gt_gardenrecommendedforvolunteerworkdaydetails").val("");
+                $("#gt_gardenrecommendedforvolunteerworkdaydetails").hide();
+                $("#gt_gardenrecommendedforvolunteerworkdaydetails_label").hide();
+                $("#gt_gardenrecommendedforvolunteerworkdaydetails").closest("tr").hide();  
+                MakeNotRequired(GardenRecommendedForVolunteerWorkdayDetailsFieldName);
+            }
+        }
+
+        //  End of toggle functions
+
+        // 9. function to turn the whole form to readyo only
+        function applyAllReadOnlyFixes() {
+            // A. INJECT GLOBAL CSS (Updated with your specific classes from the screenshot)
+            $("<style>")
+                .prop("type", "text/css")
+                .html(`
+                    /* 1. Target the 'Choose File' button classes */
+                    .btn-for-image-input, .btn-for-inputofimage, input[type='file'] {
+                        display: none !important;
+                    }
+
+                    /* 2. Target the 'Delete' button using its specific classes from your DOM */
+                    .buttonfordeleteimage, .btnforimage, [id$='_delete_button'] { 
+                        display: none !important; 
+                        visibility: hidden !important;
+                        pointer-events: none !important;
+                    }
+
+                    /* 3. Hide the container to be safe */
+                    .image-inline button { display: none !important; }
+
+                    /* 4. Visual feedback for read-only multi-selects */
+                    .msos-container, .ms-BasePicker-text, .choices__inner { 
+                        pointer-events: none !important; 
+                        background-color: #f3f3f3 !important; 
+                    }
+                    .ms-TagItem-close, .choices__button { display: none !important; }
+                `)
+                .appendTo("head");
+
+            // B. STANDARD DATA FIELDS
+            $(".entity-form, .metadata-form").find("input, select, textarea").each(function () {
+                $(this).css({
+                    "pointer-events": "none",
+                    "background-color": "#f3f3f3",
+                    "cursor": "not-allowed"
+                }).attr("tabindex", "-1");
+
+                if ($(this).hasClass("lookup")) {
+                    $(this).siblings(".input-group-btn").hide();
+                }
+            });
+
+            // C. SUBGRIDS
+            $(".entity-grid").on("loaded", function () {
+                $(this).find(".grid-actions, .dropdown-menu, .btn-default.btn-xs").hide();
+            });
+
+            // D. PERSISTENCE (Observer) - Updated for your specific Delete button
+            var observer = new MutationObserver(function () {
+                // Target specifically the 'buttonfordeleteimage' class from your screenshot
+                $(".buttonfordeleteimage, [id$='_delete_button']").hide();
+        
+                // Hide the choose file button classes
+                $(".btn-for-image-input, .btn-for-inputofimage").hide();
+        
+                // Keep multi-selects clean
+                $(".ms-TagItem-close, .choices__button").hide();
+            });
+
+            var formNode = document.querySelector('.entity-form');
+            if (formNode) {
+                observer.observe(formNode, { childList: true, subtree: true });
+            }
+        }
+
+        // End of function  applyAllReadOnlyFixes()
+
+        // 10. function to mimic "Next" button styling to "Close" button
+
+        setTimeout(function() {
+            // 1. Inject CSS with INCREASED margin-left
+            $("<style>")
+                .prop("type", "text/css")
+                .html(`
+                    .custom-oval-btn {
+                        background: linear-gradient(to bottom, #76a049 0%, #588233 100%) !important;
+                        border-radius: 100px !important;
+                        border: 4px solid #000000 !important;
+                        box-shadow: inset 0 0 0 3px #ffffff !important;
+                        color: #ffffff !important;
+                        font-weight: bold !important;
+                        font-size: 18px !important; /* <--- ADDED THIS LINE */                        
+                        padding: 10px 0 !important;
+                        min-width: 140px !important; 
+                        display: inline-block !important;
+                        cursor: pointer;
+                        outline: none;
+                        margin-left: 10px !important; /* Increased from 10px to 35px */
+                        text-align: center;
+                        transition: background 0.2s ease;
+                    }
+                    .custom-oval-btn:hover {
+                        background: linear-gradient(to bottom, #999999 0%, #666666 100%) !important;
+                        color: #ffffff !important;
+                    }
+                `)
+                .appendTo("head");
+
+            // 2. Create the Close button
+            var $wrapper = $('<div class="btn-group"></div>');
+            var $closeBtn = $('<input type="button" value="Close" id="myCloseBtn" class="btn btn-primary button next submit-btn custom-oval-btn" />');
+            $wrapper.append($closeBtn);
+
+            // 3. Inject it next to the 'Next' button
+            var $nextBtnParent = $(".actions input.next").parent();
+    
+            if ($nextBtnParent.length > 0) {
+                $nextBtnParent.after($wrapper);
+            } else {
+                $(".actions").append($wrapper);
+            }
+
+            // 4. Click Event for Redirection
+            $(document).on("click", "#myCloseBtn", function() {
+                //window.location.href = '/GT-Site-Inspections-View';
+                window.location.href = '/GT-Site-Visit-View/';
+            });
+
+        }, 500);    
+
+        // End of setTimeout function
+
+
+      });
+   }(window.jQuery));
+}
