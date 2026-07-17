@@ -1,0 +1,696 @@
+const ChickenNumberFieldName = "gt_chickennumber";                                                  //Q172a
+const ChickenSoopLengthFieldName = "gt_chickencooplength";                                          //Q173b
+const ChickenSoopWidthFieldName = "gt_chickencoopwidth";                                            //Q173b
+const ChickenSoopHeightFieldName = "gt_chickencoopheight";                                          //Q173b
+const ChickenCoopGoodConditionFieldName = "gt_chickencoopingoodcondition";                          //Q174
+const ChickenCoopConditionNotesFieldName = "gt_chickencoopconditionnotes";                          //Q174b
+const ChickenRunWith4SquareFeetPerHenFieldName = "gt_chickenrunwith4squarefeetperhen";              //Q175
+const NonChickenBirdsNotesFieldName = "gt_nonchickenbirdsnotes";                                    //Q180b
+const PondConditionChoiceFieldName = "gt_pondconditionchoice";                                      //Q182
+const PondWithPumpFieldName = "gt_pondwithpump";                                                    //Q183
+const PondWithFenceFieldName = "gt_pondwithfence";                                                  //Q184
+const AquaponicsDetailsFieldName = "gt_aquaponicsdetails";                                          //Q186a
+const TotalNumberOfHivesFieldName = "gt_totalnumberofhives";                                        //Q187b
+const OtherAnimalsDetailsFieldName  = "gt_otheranimalsdetails";                                     //Q189a
+
+
+// Function to make a field required and add a custom validator
+var MakeRequired = function (fieldName) {
+    
+    try {
+        if ($("#" + fieldName) != undefined) {
+            
+            $("#" + fieldName).prop('required', true);
+            $("#" + fieldName).closest(".control").prev().addClass("required");
+
+            var Requiredvalidator = document.createElement('span');
+            Requiredvalidator.style.display = "none";
+            Requiredvalidator.id = fieldName + "Validator";
+            Requiredvalidator.controltovalidate = fieldName;
+            Requiredvalidator.errormessage = `<a href='#${fieldName}_label'>${$(`#${fieldName}_label`).html()} is a required field.</a>`;
+            Requiredvalidator.initialvalue = "";
+            Requiredvalidator.evaluationfunction = function (){
+                var value = $("#" + fieldName).val();
+                if (value == null || value == "") {
+                    return false;
+                }else {
+                    return true;
+                }
+            };
+
+            // Add the new validator to the page validators array:
+            var duplicateFlag = false;
+            if(Page_Validators.length > 0){
+         
+                for(let i = 0; i < Page_Validators.length; i++){
+                    
+                    let currentItem = Page_Validators[i].id;
+                    
+                    if(Requiredvalidator.id == currentItem){
+                        duplicateFlag = true;
+                    }
+                }
+            }
+
+            if(duplicateFlag === false){
+                Page_Validators.push(Requiredvalidator);
+            }  
+        }
+    }
+    catch (error) {
+        errorHandler(error);
+    }
+             
+}
+
+//
+var MakeNotRequired = function (fieldName) {
+    try {
+        if ($("#" + fieldName) != undefined) {
+            $("#" + fieldName).closest(".control").prev().removeClass("required");
+            $("#" + fieldName).prop('required', false);
+
+            for (i = 0; i < Page_Validators.length; i++) {
+                if (Page_Validators[i].id == fieldName + "Validator") {
+                   
+                    Page_Validators.splice(i, 1);
+                    break; // Once found and removed, exit the loop
+                }
+            }
+        }
+    }
+    catch (error) {
+        errorHandler(error);
+    }
+}
+
+
+//Add First Breadcrumb to Step 2 of SIF: 
+let displayFirstBreadcrumb = function(){
+ let imgPath =  `/GT-Site-Visits-Multistep-Form/GT-Breadcrumbs_0`;
+ 
+    $("li").each(function(){
+        let curr_index = $(this).index();
+        let active_index = $(".active").index();
+
+        if($(this).hasClass("active")){
+        //   $("li:not(.active)").addClass("hidden");
+        $("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
+            $(this).addClass("new-breadcrumb-active").removeClass("active"); 
+            $(this).html(`<img src=${imgPath}${curr_index}.png>`); 
+            console.log("This is the dynamic function");
+        };
+  
+ if(curr_index > active_index ){
+            console.log(curr_index + "vs" + active_index );
+            $(this).addClass("hidden");
+        }
+
+        if(curr_index < active_index ){
+            console.log(curr_index + "vs" + active_index );
+            $(this).addClass("hidden");
+        }
+
+    });
+};
+
+
+
+if (window.jQuery) {
+   (function ($) {
+      $(document).ready(function () {
+
+displayFirstBreadcrumb();
+
+//alert("JNG - TESTING - Step 7 Animals - Chickens & Other Birds Tab");
+
+         $("#gt_inspectionstatus").closest("tr").hide(); 
+         var InspectionStatusValue =  $("#gt_inspectionstatus").val();  
+         //alert(InspectionStatusValue);
+
+         // All form fields and subgrids would turn to raady only if Inspection Status = Submitted
+         if (InspectionStatusValue == "122850001") { 
+            applyAllReadOnlyFixes();
+         } 
+
+
+        // 1. Start of Input Event Handlers
+
+        $("#gt_chickennumber").on("input", function () {
+            // Remove any character that is not a digit (0-9)
+            //this.value = this.value.replace(/\D/g, '');
+
+            // 1. Remove non-digit characters
+            let value = this.value.replace(/\D/g, '');
+
+            // 2. Check if the value is 0
+            if (value !== "") {
+                let num = parseInt(value, 10);
+                    
+                if (num < 1) {
+                    value = ""; // Clears the input if they type 0
+                } else {
+                    value = num.toString(); // Removes leading zeros (e.g., "05" becomes "5")
+                }
+            }
+
+            this.value = value;    
+        });    
+
+        $("#gt_chickencooplength").on("input", function () {
+            // Remove any character that is not a digit (0-9)
+            //this.value = this.value.replace(/\D/g, '');
+
+            // 1. Remove non-digit characters
+            let value = this.value.replace(/\D/g, '');
+
+            // 2. Check if the value is 0
+            if (value !== "") {
+                let num = parseInt(value, 10);
+        
+                if (num < 1) {
+                    value = ""; // Clears the input if they type 0
+                } else {
+                    value = num.toString(); // Removes leading zeros (e.g., "05" becomes "5")
+                }
+            }
+
+            this.value = value;           
+        }); 
+  
+        $("#gt_chickencoopwidth").on("input", function () {
+            // Remove any character that is not a digit (0-9)
+            //this.value = this.value.replace(/\D/g, '');
+
+            // 1. Remove non-digit characters
+            let value = this.value.replace(/\D/g, '');
+
+            // 2. Check if the value is 0
+            if (value !== "") {
+                let num = parseInt(value, 10);
+        
+                if (num < 1) {
+                    value = ""; // Clears the input if they type 0
+                } else {
+                    value = num.toString(); // Removes leading zeros (e.g., "05" becomes "5")
+                }
+            }
+
+            this.value = value;         
+        });
+
+        $("#gt_chickencoopheight").on("input", function () {
+            // Remove any character that is not a digit (0-9)
+            //this.value = this.value.replace(/\D/g, '');
+
+            // 1. Remove non-digit characters
+            let value = this.value.replace(/\D/g, '');
+
+            // 2. Check if the value is 0
+            if (value !== "") {
+                let num = parseInt(value, 10);
+        
+                if (num < 1) {
+                    value = ""; // Clears the input if they type 0
+                } else {
+                    value = num.toString(); // Removes leading zeros (e.g., "05" becomes "5")
+                }
+            }
+
+            this.value = value;           
+        });
+
+        $("#gt_totalnumberofhives").on("input", function () {
+            // Remove any character that is not a digit (0-9)
+            //this.value = this.value.replace(/\D/g, '');
+            // 1. Remove non-digit characters
+            let value = this.value.replace(/\D/g, '');
+
+            // 2. Check if the value is 0
+            if (value !== "") {
+                let num = parseInt(value, 10);
+        
+                if (num < 1) {
+                    value = ""; // Clears the input if they type 0
+                } else {
+                    value = num.toString(); // Removes leading zeros (e.g., "05" becomes "5")
+                }
+            }
+
+            this.value = value; 
+        
+        });
+
+        //  End of Input Event Handlers
+
+
+        // 2. Initial check when form loads 
+
+        toggleChickenCoopRelatedFields();
+        toggleChickenCoopConditionNotes();
+        toggleChickenRunWith4SquareFeetPerHen();
+        toggleNonChickenBoirdsNotes();
+        togglePondRelatedFields();
+        toggleAquaponicsDetails();
+        toggleTotalNumberOfHives();
+        toggleMultiChoice();
+        toggleOtherAnimalsDetails();
+
+        // 3. Bind change event to the Choice fields
+        $("#gt_gardenwithchicken").change(function() {        
+            toggleChickenCoopRelatedFields();
+        });
+
+        $("#gt_chickencoopingoodcondition").change(function() {        
+            toggleChickenCoopConditionNotes();
+        });
+
+        $("#gt_gardenwithchickenrun").change(function() {        
+            toggleChickenRunWith4SquareFeetPerHen();
+        });
+
+        $("#gt_nonchickenbirds").change(function() {        
+            toggleNonChickenBoirdsNotes();
+        });
+
+        $("#gt_gardenwithpond").change(function() {        
+            togglePondRelatedFields();
+        });
+
+        $("#gt_aquaponicschoice").change(function() {        
+            toggleAquaponicsDetails();
+        });
+
+        $("#gt_beehiveschoice").change(function() {
+            toggleTotalNumberOfHives();
+        });  
+
+        $("#gt_otheranimalsingarden").change(function() {
+            toggleOtherAnimalsDetails();
+        });  
+
+
+        // 4. Functions to toggle visibility and required status of dependent fields
+
+        // Function to toggle Chicken Coop related fields visibility and required status
+        function toggleChickenCoopRelatedFields() {
+            var selectedValue =  $("#gt_gardenwithchicken").val();  
+            if (selectedValue == "122850000") { // Check for "Yes" value (Garden with chicken present)
+
+                $("#gt_chickennumber").show();
+                $("#gt_chickennumber_label").show(); 
+                MakeRequired(ChickenNumberFieldName); 
+
+                $("#gt_chickencooplength").show();
+                $("#gt_chickencooplength_label").show();
+                MakeRequired(ChickenSoopLengthFieldName);
+
+                $("#gt_chickencoopwidth").show();
+                $("#gt_chickencoopwidth_label").show();
+                MakeRequired(ChickenSoopWidthFieldName);    
+
+                $("#gt_chickencoopheight").show();      
+                $("#gt_chickencoopheight_label").show();
+                MakeRequired(ChickenSoopHeightFieldName);
+
+                $("#gt_chickencoopingoodcondition").show();
+                $("#gt_chickencoopingoodcondition_label").show();   
+                MakeRequired(ChickenCoopGoodConditionFieldName);   
+            
+            
+                // JNG  04142026
+                $("#gt_is3squarefeetperhen").show();
+                $("#gt_is3squarefeetperhen_label").show();   
+                
+                $("#gt_gardenwithchickenrun").show();   
+                $("#gt_gardenwithchickenrun_label").show();
+
+            } else {
+
+                $("#gt_chickennumber").val("");
+                $("#gt_chickennumber").hide();
+                $("#gt_chickennumber_label").hide();
+                MakeNotRequired(ChickenNumberFieldName);  
+
+                $("#gt_chickencooplength").val("");
+                $("#gt_chickencooplength").hide();
+                $("#gt_chickencooplength_label").hide();    
+                MakeNotRequired(ChickenSoopLengthFieldName);
+
+                $("#gt_chickencoopwidth").val("");
+                $("#gt_chickencoopwidth").hide();
+                $("#gt_chickencoopwidth_label").hide(); 
+                MakeNotRequired(ChickenSoopWidthFieldName);
+
+                $("#gt_chickencoopheight").val("");
+                $("#gt_chickencoopheight").hide();
+                $("#gt_chickencoopheight_label").hide();   
+                MakeNotRequired(ChickenSoopHeightFieldName); 
+
+                $("#gt_chickencoopingoodcondition").val("");
+                $("#gt_chickencoopingoodcondition").hide();
+                $("#gt_chickencoopingoodcondition_label").hide();   
+                MakeNotRequired(ChickenCoopGoodConditionFieldName);
+
+                $("#gt_chickencoopconditionnotes").val("");
+                $("#gt_chickencoopconditionnotes").hide();
+                $("#gt_chickencoopconditionnotes_label").hide(); 
+                MakeNotRequired(ChickenCoopConditionNotesFieldName);
+
+                // JNG  04142026
+                $("#gt_is3squarefeetperhen").val("");
+                $("#gt_is3squarefeetperhen").hide();
+                $("#gt_is3squarefeetperhen_label").hide(); 
+
+                $("#gt_gardenwithchickenrun").val("");
+                $("#gt_gardenwithchickenrun").hide();
+                $("#gt_gardenwithchickenrun_label").hide();
+
+                $("#gt_chickenrunwith4squarefeetperhen").val("");
+                $("#gt_chickenrunwith4squarefeetperhen").hide();
+                $("#gt_chickenrunwith4squarefeetperhen_label").hide(); 
+                MakeNotRequired(ChickenRunWith4SquareFeetPerHenFieldName);
+
+            
+            }
+        }
+
+
+        // Function to toggle Chicken Coop Condition Notes visibility
+        function toggleChickenCoopConditionNotes() {
+            // Check for "No" value (Chicken coop not in good condition)
+            var selectedValue =  $("#gt_chickencoopingoodcondition").val();   
+            if (selectedValue == "122850001") { 
+                $("#gt_chickencoopconditionnotes").show();
+                $("#gt_chickencoopconditionnotes_label").show();
+                MakeRequired(ChickenCoopConditionNotesFieldName);
+            } else {
+                $("#gt_chickencoopconditionnotes").val("");
+                $("#gt_chickencoopconditionnotes").hide();
+                $("#gt_chickencoopconditionnotes_label").hide();
+                MakeNotRequired(ChickenCoopConditionNotesFieldName);
+            }   
+        }
+
+
+        // Function to toggle Chicken Run with 4 Square Feet Per Hen visibility
+        function toggleChickenRunWith4SquareFeetPerHen() {
+            // Check for "Yes" value (Garden with Chicken Run)
+            var selectedValue =  $("#gt_gardenwithchickenrun").val();   
+            if (selectedValue == "122850000") { 
+                $("#gt_chickenrunwith4squarefeetperhen").show();
+                $("#gt_chickenrunwith4squarefeetperhen_label").show();
+                MakeRequired(ChickenRunWith4SquareFeetPerHenFieldName);
+            } else {
+                $("#gt_chickenrunwith4squarefeetperhen").val("");
+                $("#gt_chickenrunwith4squarefeetperhen").hide();
+                $("#gt_chickenrunwith4squarefeetperhen_label").hide();
+                MakeNotRequired(ChickenRunWith4SquareFeetPerHenFieldName);
+            }   
+        }
+
+
+        // Function to toggle Non-Chicken Birds Notes visibility
+        function toggleNonChickenBoirdsNotes() {
+            var selectedValue =  $("#gt_nonchickenbirds").val();
+            // Check for "Yes" value (Non-chicken birds present)
+            if (selectedValue == "122850000") { 
+                $("#gt_nonchickenbirdsnotes").show();
+                $("#gt_nonchickenbirdsnotes_label").show();
+                MakeRequired(NonChickenBirdsNotesFieldName);
+            } else {
+                $("#gt_nonchickenbirdsnotes").val("");
+                $("#gt_nonchickenbirdsnotes").hide();
+                $("#gt_nonchickenbirdsnotes_label").hide();
+                MakeNotRequired(NonChickenBirdsNotesFieldName);
+            }   
+        }
+
+        // Function to toggle Pond Related Fields visibility
+        function togglePondRelatedFields() {
+            var selectedValue =  $("#gt_gardenwithpond").val();
+
+            if (selectedValue == "122850000") { // Check for "Yes" value (Pond present)
+                $("#gt_pondconditionchoice").show();
+                $("#gt_pondconditionchoice_label").show();  
+                MakeRequired(PondConditionChoiceFieldName);
+
+                $("#gt_pondwithpump").show();   
+                $("#gt_pondwithpump_label").show();
+                MakeRequired(PondWithPumpFieldName);
+
+                $("#gt_pondwithfence").show();
+                $("#gt_pondwithfence_label").show();
+                MakeRequired(PondWithFenceFieldName);
+
+                //$("#gt_animalsinpond").show();
+                //$("#gt_animalsinpond_label").show();
+                $("#gt_animalsinpond").closest('tr').show();
+                $("#gt_animalsinpond_label").show();
+
+            } else {
+                $("#gt_pondconditionchoice").val("");
+                $("#gt_pondconditionchoice").hide();
+                $("#gt_pondconditionchoice_label").hide(); 
+                MakeNotRequired(PondConditionChoiceFieldName);  
+
+                $("#gt_pondwithpump").val("");
+                $("#gt_pondwithpump").hide();
+                $("#gt_pondwithpump_label").hide();
+                MakeNotRequired(PondWithPumpFieldName);
+
+                $("#gt_pondwithfence").val("");
+                $("#gt_pondwithfence").hide();
+                $("#gt_pondwithfence_label").hide();
+                MakeNotRequired(PondWithFenceFieldName);
+
+                /*
+                $("#gt_animalsinpond").val("");
+                $("#gt_animalsinpond").hide();
+                $("#gt_animalsinpond_label").hide();    
+                */
+                $("#gt_animalsinpond").closest('tr').hide();
+                $("#gt_animalsinpond_label").hide();
+
+                var $field = $("#gt_animalsinpond");
+                var $container = $("#gt_animalsinpond_Container");
+
+                // 1. Clear the actual data value
+                $field.val('');
+
+                // 2. Uncheck all internal checkboxes if rendered as a list
+                $container.find('input.msos-checkbox').prop('checked', false);
+
+                // 3. Remove visual "selected" tags from the UI
+                $container.find('.msos-selected-display-item').remove();
+
+                // 4. Notify the system of the change
+                $field.trigger('change');
+            }
+        }
+
+
+        // Function to toggle Aquaponics Details visibility and required status
+        function toggleAquaponicsDetails() {
+            var selectedValue =  $("#gt_aquaponicschoice").val();
+
+            if (selectedValue == "122850000") { // Check for "Yes" value (Aquaponics present)
+                $("#gt_aquaponicsdetails").show();
+                $("#gt_aquaponicsdetails_label").show();
+                MakeRequired(AquaponicsDetailsFieldName);
+            } else {
+                $("#gt_aquaponicsdetails").val("");
+                $("#gt_aquaponicsdetails").hide();
+                $("#gt_aquaponicsdetails_label").hide();
+                MakeNotRequired(AquaponicsDetailsFieldName);
+            }
+        }
+
+
+        // Function to toggle Total Number of Hives visibility
+        function toggleTotalNumberOfHives() {
+            var selectedValue =  $("#gt_beehiveschoice").val();
+            //alert(selectedValue);
+            if (selectedValue == "122850001" || selectedValue == "122850002") { // Check for 'Yes' values (Beehives not present)
+                $("#gt_totalnumberofhives").show();
+                $("#gt_totalnumberofhives_label").show(); 
+                $("#gt_totalnumberofhives").closest("tr").show();
+                MakeRequired(TotalNumberOfHivesFieldName);
+
+                // Force the red asterisk to show up on the label
+             var labelElement = $("#gt_totalnumberofhives_label");
+                if (labelElement.find(".required").length === 0) {
+                    labelElement.append('<span class="required" aria-hidden="true" style="color: red;"> *</span>');
+                }             
+            } else {
+                $("#gt_totalnumberofhives").val('');
+                $("#gt_totalnumberofhives").hide();  
+                $("#gt_totalnumberofhives_label").hide(); 
+                $("#gt_totalnumberofhives").closest("tr").hide();
+                MakeNotRequired(TotalNumberOfHivesFieldName);             
+            }
+        }
+
+
+
+        // Functions to toggle multi-choice fields
+        function toggleMultiChoice() {
+            //alert("JNGTEST");
+            // $("#gt_gardenwithchicken").change(function() {
+
+            if ($("#gt_gardenwithpond").val() == "122850000") {
+
+            } else {
+              $("#gt_animalsinpond").val('');   
+              $('#gt_animalsinpond_container').find('input[type="checkbox"]').prop('checked', false);
+              $("#gt_animalsinpond").closest('.control').find('input.msos-checkbox').prop('checked', false);
+              $("#gt_animalsinpond").closest('.control').find('input[type="checkbox"]').prop('checked', false);
+              $("#gt_animalsinpond").trigger('change');
+            }
+        } 
+
+        // Function to toggle Other Animals Details visibility
+        function toggleOtherAnimalsDetails() {
+            var selectedValue =  $("#gt_otheranimalsingarden").val();
+            // Check for "Other" value (Other Animals In Garden)
+            if (selectedValue == "122850003") { 
+                $("#gt_otheranimalsdetails").show();
+                $("#gt_otheranimalsdetails_label").show();
+                //MakeRequired(OtherAnimalsDetailsFieldName);
+            } else {
+                $("#gt_otheranimalsdetails").val("");
+                $("#gt_otheranimalsdetails").hide();
+                $("#gt_otheranimalsdetails_label").hide();
+                //MakeNotRequired(OtherAnimalsDetailsFieldName);
+            }   
+        }
+
+        //  End of toggle functions    
+
+        // 5. function to turn the whole form to readyo only
+        function applyAllReadOnlyFixes() {
+            // A. INJECT GLOBAL CSS (Updated with your specific classes from the screenshot)
+            $("<style>")
+                .prop("type", "text/css")
+                .html(`
+                    /* 1. Target the 'Choose File' button classes */
+                    .btn-for-image-input, .btn-for-inputofimage, input[type='file'] {
+                        display: none !important;
+                    }
+
+                    /* 2. Target the 'Delete' button using its specific classes from your DOM */
+                    .buttonfordeleteimage, .btnforimage, [id$='_delete_button'] { 
+                        display: none !important; 
+                        visibility: hidden !important;
+                        pointer-events: none !important;
+                    }
+
+                    /* 3. Hide the container to be safe */
+                    .image-inline button { display: none !important; }
+
+                    /* 4. Visual feedback for read-only multi-selects */
+                    .msos-container, .ms-BasePicker-text, .choices__inner { 
+                        pointer-events: none !important; 
+                        background-color: #f3f3f3 !important; 
+                    }
+                    .ms-TagItem-close, .choices__button { display: none !important; }
+                `)
+                .appendTo("head");
+
+            // B. STANDARD DATA FIELDS
+            $(".entity-form, .metadata-form").find("input, select, textarea").each(function () {
+                $(this).css({
+                    "pointer-events": "none",
+                    "background-color": "#f3f3f3",
+                    "cursor": "not-allowed"
+                }).attr("tabindex", "-1");
+
+                if ($(this).hasClass("lookup")) {
+                    $(this).siblings(".input-group-btn").hide();
+                }
+            });
+
+            // C. SUBGRIDS
+            $(".entity-grid").on("loaded", function () {
+                $(this).find(".grid-actions, .dropdown-menu, .btn-default.btn-xs").hide();
+            });
+
+            // D. PERSISTENCE (Observer) - Updated for your specific Delete button
+            var observer = new MutationObserver(function () {
+                // Target specifically the 'buttonfordeleteimage' class from your screenshot
+                $(".buttonfordeleteimage, [id$='_delete_button']").hide();
+        
+                // Hide the choose file button classes
+                $(".btn-for-image-input, .btn-for-inputofimage").hide();
+        
+                // Keep multi-selects clean
+                $(".ms-TagItem-close, .choices__button").hide();
+            });
+
+            var formNode = document.querySelector('.entity-form');
+            if (formNode) {
+                observer.observe(formNode, { childList: true, subtree: true });
+            }
+        }
+
+        // End of function  applyAllReadOnlyFixes()
+
+        // 6. function to mimic "Next" button styling to "Close" button
+
+        setTimeout(function() {
+            // 1. Inject CSS with INCREASED margin-left
+            $("<style>")
+                .prop("type", "text/css")
+                .html(`
+                    .custom-oval-btn {
+                        background: linear-gradient(to bottom, #76a049 0%, #588233 100%) !important;
+                        border-radius: 100px !important;
+                        border: 4px solid #000000 !important;
+                        box-shadow: inset 0 0 0 3px #ffffff !important;
+                        color: #ffffff !important;
+                        font-weight: bold !important;
+                        font-size: 18px !important; /* <--- ADDED THIS LINE */                        
+                        padding: 10px 0 !important;
+                        min-width: 140px !important; 
+                        display: inline-block !important;
+                        cursor: pointer;
+                        outline: none;
+                        margin-left: 10px !important; /* Increased from 10px to 35px */
+                        text-align: center;
+                        transition: background 0.2s ease;
+                    }
+                    .custom-oval-btn:hover {
+                        background: linear-gradient(to bottom, #999999 0%, #666666 100%) !important;
+                        color: #ffffff !important;
+                    }
+                `)
+                .appendTo("head");
+
+            // 2. Create the Close button
+            var $wrapper = $('<div class="btn-group"></div>');
+            var $closeBtn = $('<input type="button" value="Close" id="myCloseBtn" class="btn btn-primary button next submit-btn custom-oval-btn" />');
+            $wrapper.append($closeBtn);
+
+            // 3. Inject it next to the 'Next' button
+            var $nextBtnParent = $(".actions input.next").parent();
+    
+            if ($nextBtnParent.length > 0) {
+                $nextBtnParent.after($wrapper);
+            } else {
+                $(".actions").append($wrapper);
+            }
+
+            // 4. Click Event for Redirection
+            $(document).on("click", "#myCloseBtn", function() {
+                //window.location.href = '/GT-Site-Inspections-View';
+                window.location.href = '/GT-Site-Visit-View/';
+            });
+
+        }, 500);    
+        // End of setTimeout function
+
+
+
+      });
+   }(window.jQuery));
+}
