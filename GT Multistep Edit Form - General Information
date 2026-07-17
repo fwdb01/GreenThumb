@@ -1,0 +1,160 @@
+if (window.jQuery) {
+   (function ($) {
+      $(document).ready(function () {
+
+ 
+//alert("JNG - TESTING - General Information");
+
+
+        // Hide gt_inspectionstatus 
+         $("#gt_inspectionstatus").closest("tr").hide(); 
+         var InspectionStatusValue =  $("#gt_inspectionstatus").val();  
+
+         // All form fields and subgrids would turn to raady only if Inspection Status = Submitted
+         if (InspectionStatusValue == "122850001") { 
+            applyAllReadOnlyFixes();
+         } 
+
+
+        // 1. Initial check when form loads 
+
+        //toggleInspectionYear();  
+
+        // 2. Bind change event to the Choice fields
+
+        $("#gt_inspectionyear").change(function() {
+            toggleInspectionYear();
+        });         
+
+        // 3. Functions to validate Inspection Year field, Inspection Year could only be this or last year
+        function toggleInspectionYear() {
+            var selectedValue = $("#gt_inspectionyear").val(); 
+            const currentYear = new Date().getFullYear().toString();
+            const previousYear = (new Date().getFullYear() - 1).toString();
+
+            if (selectedValue == previousYear || selectedValue == currentYear) {
+                
+            } else {
+                $("#gt_inspectionyear").val("");
+            } 
+      
+        }
+
+        // function to turn the whole form to ready only
+        function applyAllReadOnlyFixes() {
+
+            // 1. REGULAR FIELDS & LOOKUPS
+            $(".entity-form, .metadata-form").find("input, select, textarea").each(function () {
+                var $field = $(this);
+        
+                $field.css({
+                    "pointer-events": "none",
+                    "background-color": "#f3f3f3",
+                    "cursor": "not-allowed"
+                }).attr("tabindex", "-1");
+
+                // Target Lookup fields and completely remove the button DOM content
+                if ($field.hasClass("lookup") || $field.attr("data-control-type") === "lookup") {
+                    var $parentGroup = $field.closest('.input-group');
+                    // Completely empty and hide all lookup/search elements inside this input group
+                    $parentGroup.find('.input-group-btn, .input-group-append, .clearlookupfield, .launchmodal, .lookup-btn, .launchentitylookup').empty().hide();
+                }
+            });
+
+            // 2. MULTI-SELECT & PCF CONTROLS
+            var multiSelectSelectors = ".ms-TagItem-close, .ms-BasePicker-input, .ms-ComboBox-Input, .msos-container, .ms-BasePicker-text, .choices__inner";
+            $(multiSelectSelectors).css({
+                "pointer-events": "none",
+                "background-color": "#f3f3f3",
+                "cursor": "not-allowed"
+            });
+            $(".ms-TagItem-close, .choices__button, .msos-selected-display-item-close").hide();
+
+            // 3. SUBGRIDS
+            $(".entity-grid").on("loaded", function () {
+                $(this).find(".grid-actions").hide(); 
+                $(this).find(".dropdown-menu").remove(); 
+                $(this).find(".btn-default.btn-xs").hide(); 
+            });
+
+            // 4. PERSISTENCE (MutationObserver)
+            var observer = new MutationObserver(function () {
+                $(multiSelectSelectors).css({
+                    "pointer-events": "none",
+                    "background-color": "#f3f3f3"
+                });
+                $(".ms-TagItem-close, .choices__button").hide();
+        
+                // Destructive cleanup for lookups that render or reset later
+                $('.entity-form .lookup, .metadata-form .lookup').closest('.input-group')
+                    .find('.input-group-btn, .input-group-append, .clearlookupfield, .launchmodal, .lookup-btn, .launchentitylookup').empty().hide();
+            });
+
+            var formNode = document.querySelector('.entity-form') || document.querySelector('.metadata-form');
+            if (formNode) {
+                observer.observe(formNode, { childList: true, subtree: true });
+            }
+
+        }
+
+        // End of function  applyAllReadOnlyFixes()
+
+
+        // function to mimic "Next" button styling to "Close" button
+
+        setTimeout(function() {
+            // 1. Inject CSS with INCREASED margin-left
+            $("<style>")
+                .prop("type", "text/css")
+                .html(`
+                    .custom-oval-btn {
+                        background: linear-gradient(to bottom, #76a049 0%, #588233 100%) !important;
+                        border-radius: 100px !important;
+                        border: 4px solid #000000 !important;
+                        box-shadow: inset 0 0 0 3px #ffffff !important;
+                        color: #ffffff !important;
+                        font-weight: bold !important;
+                        padding: 10px 0 !important;
+                        min-width: 140px !important; 
+                        display: inline-block !important;
+                        font-size: 18px !important; /* <--- ADDED THIS LINE */
+                        cursor: pointer;
+                        outline: none;
+                        margin-left: 10px !important; /* Increased from 10px to 35px */
+                        text-align: center;
+                        transition: background 0.2s ease;
+                    }
+                    .custom-oval-btn:hover {
+                        background: linear-gradient(to bottom, #999999 0%, #666666 100%) !important;
+                        color: #ffffff !important;
+                    }
+                `)
+                .appendTo("head");
+
+            // 2. Create the Close button
+            var $wrapper = $('<div class="btn-group"></div>');
+            var $closeBtn = $('<input type="button" value="Close" id="myCloseBtn" class="btn btn-primary button next submit-btn custom-oval-btn" />');
+            $wrapper.append($closeBtn);
+
+            // 3. Inject it next to the 'Next' button
+            var $nextBtnParent = $(".actions input.next").parent();
+    
+            if ($nextBtnParent.length > 0) {
+                $nextBtnParent.after($wrapper);
+            } else {
+                $(".actions").append($wrapper);
+            }
+
+            // 4. Click Event for Redirection
+            $(document).on("click", "#myCloseBtn", function() {
+                //window.location.href = '/GT-Site-Inspections-View';
+                window.location.href = '/GT-Site-Visit-View/';
+            });
+
+        }, 500);    
+        
+        // End of setTimeout function
+
+      });
+   }(window.jQuery));
+}
