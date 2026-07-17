@@ -1,0 +1,1349 @@
+//Add First Breadcrumb to Step 2 of SIF: 
+let displayFirstBreadcrumb = function(){
+ let imgPath =  `/GT-Site-Visits-Multistep-Form/GT-Breadcrumbs_0`;
+ 
+    $("li").each(function(){
+        let curr_index = $(this).index();
+        let active_index = $(".active").index();
+
+        if($(this).hasClass("active")){
+        //   $("li:not(.active)").addClass("hidden");
+         $("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
+            $(this).addClass("new-breadcrumb-active").removeClass("active"); 
+            $(this).html(`<img src=${imgPath}${curr_index}.png>`); 
+            console.log("This is the dynamic function");
+        };
+  
+ if(curr_index > active_index ){
+            console.log(curr_index + "vs" + active_index );
+            $(this).addClass("hidden");
+        }
+
+        if(curr_index < active_index ){
+            console.log(curr_index + "vs" + active_index );
+            $(this).addClass("hidden");
+        }
+
+    });
+};
+
+
+
+
+// Array of array with all controls that have validation rules.
+const  valControls = {
+gt_internalwaterprovided : ["gt_rpzlock"],
+
+gt_rainwaterharvestingsystem  : [
+    "gt_numberofrainbarrels",
+ "gt_otherrainwaterharvestingsystem",
+ "gt_rainwaterharvestingsystemdetails" 
+],
+
+gt_waterfromadjacentbuildings : ["gt_whereswatercomingfrom"
+],
+
+gt_improperappliancespresent :[
+"gt_improperappliancesdetails"
+],
+
+gt_gardenselectricitysource :[
+ "gt_otherelectricitysource"
+],
+
+ gt_solarpanelspresent :[
+"gt_solarpanelswithpermanentbattery",
+"gt_solarpanelspermanetbatterydetails"
+],
+
+gt_solarpanelswithpermanentbattery : [
+  "gt_solarpanelspermanetbatterydetails"
+  ],
+gt_gardenwithshed :[
+"gt_numberofgardenshed", "gt_greenthumbaccesstosheds","gt_shedingoodcondition","gt_sheddimensions"
+],
+
+gt_greenthumbaccesstosheds :["gt_greenthumbaccesstoshedsotherdetails"],
+
+gt_shednomination :["gt_shednominationssizes", "gt_shednominationdetails", "gt_shednominationssizes_Container"
+],
+//
+gt_gardenwithjobbox :["gt_jobboxingoodcondition"],
+                       
+gt_jobboxingoodcondition :["gt_jobboxconditondetails"],
+ 
+gt_jobboxnomination :["gt_jobboxnominationsizes", "gt_jobboxnominationdetails"
+],
+
+gt_jobboxnominationsizes :["gt_jobboxnominationothersize"
+],
+
+gt_gardenwithcasita :["gt_casitawithwindows", "gt_casitaingoodcondition", "gt_casitaremovalnomination" ],
+ 
+gt_casitaingoodcondition :["gt_casitaconditiondetails"],
+
+gt_greenthumbaccesstosheds :["gt_greenthumbaccesstoshedsotherdetails"],
+
+gt_gardenwithotherstoragestructures :["gt_additionalstoragestructuredetails", "gt_additionalstoragestructurenotes"],
+
+gt_gardenshadestructures :["gt_othershadestructuredetails","gt_shadestructureingoodcondition","gt_additionalshadestructuredetails"],
+
+gt_shadestructurenomination :["gt_newshadestructuretypeandsize",
+"gt_shadestructurenominationdetails"
+],
+gt_gardenwithpicnictable :["gt_picnictablecount",
+"gt_picnictabledimensions", "gt_picnictableingoodcondition"],
+ 
+gt_picnictablenomination :["gt_replacementmultipicnictablesizes",
+"gt_picnictablenominationdetails"],
+ 
+gt_gardenwithbench :["gt_benchcount",
+"gt_benchingoodcondition"],
+
+gt_benchnomination :["gt_newbenchsizes",
+"gt_benchnominationdetails"],
+
+ gt_gardenwithfirepitpizzaovenbrickbbq :["gt_firepitpizzaovenbrickbbqcondition"
+],
+gt_gardenwithstage :["gt_stagecondition"],
+
+//gt_gardenwithgreenhouse :["gt_greenhouseadditionaldetails","gt_greenhousecondition", "gt_greenhouseprimarilyusedas"],
+
+gt_gardenwithgreenhousehoophouse :["gt_greenhouseadditionaldetails","gt_greenhousecondition", "gt_greenhouseprimarilyusedas"],
+
+gt_greenhouseprimarilyusedas : ["gt_greenhouseusedasotherdetails"],
+
+gt_greenhousenomination :["gt_newgreenhouserecommendedsize","gt_greenhousenominationdetails"],
+
+gt_gardenwithunapprovedtoilet :["gt_unapprovedtoiletdetails"],
+
+gt_gardenwithmiscellaneousstructure :["gt_miscellaneousstructuredetails",
+"gt_miscellaneousstructurecondition"],
+
+gt_structureover120squarefeet :["gt_structureover120squarefeetdetails"],
+
+gt_rdpartyutilities :["gt_rdpartyutilities"]
+}
+
+
+
+const arrNumericalInputs = ["#gt_numberofrainbarrels","#gt_numberofgardenshed","#gt_benchcount","#gt_picnictablecount"] ;
+
+//Array of all the controls with validation that we will iterate through to apply rules to children in valControls array.
+const inspectionJS = ["gt_internalwaterprovided", "gt_rainwaterharvestingsystem", "gt_waterfromadjacentbuildings", "gt_improperappliancespresent", "gt_rdpartyutilities", "gt_solarpanelswithpermanentbattery", "gt_gardenselectricitysource",
+ "gt_solarpanelspresent","gt_gardenwithshed", "gt_greenthumbaccesstosheds","gt_shednomination", "gt_gardenwithjobbox", "gt_jobboxingoodcondition", "gt_jobboxnomination","gt_jobboxnominationsizes","gt_gardenwithcasita", "gt_casitaingoodcondition",
+"gt_gardenwithotherstoragestructures","gt_gardenshadestructures", "gt_shadestructurenomination","gt_gardenwithpicnictable","gt_picnictablenomination",
+"gt_gardenwithbench","gt_benchnomination","gt_gardenwithfirepitpizzaovenbrickbbq","gt_gardenwithstage", "gt_gardenwithgreenhousehoophouse","gt_greenhouseprimarilyusedas","gt_greenhousenomination","gt_gardenwithunapprovedtoilet","gt_gardenwithmiscellaneousstructure",  "gt_structureover120squarefeet"];
+
+const affirmative =["Yes","Other"]; 
+
+
+const detailsNoControl = ["gt_jobboxingoodcondition"];
+
+var subgridThirdParty = "Third_Party_Subgrid";
+
+//flag to check if third party drop down and use in the validation for the Third Party Sub Grid.
+var boolThirdParty = false;
+
+ const arrValues = new Array();
+ 
+const other = ["gt_greenthumbaccesstoshedsotherdetails","gt_jobboxnominationothersize","gt_otherelectricitysource","gt_otherrainwaterharvestingsystem"];
+
+const rainSystem =["122850002","122850003"];
+const Section ="Third_Party_Subgrid";
+const title ="Third-party utility photos";
+
+// Array of controls that should be hidden by default on page load.
+const hideArray =["gt_rpzlock", "gt_numberofrainbarrels", "gt_otherrainwaterharvestingsystem", "gt_rainwaterharvestingsystemdetails", "gt_shednominationssizes", "gt_shednominationssizes_Container", "gt_numberofgardenshed", "gt_greenthumbaccesstosheds","gt_shedingoodcondition","gt_sheddimensions", "gt_greenthumbaccesstoshedsotherdetails", "gt_improperappliancesdetails", "gt_whereswatercomingfrom", "gt_otherelectricitysource","gt_solarpanelswithpermanentbattery", "gt_solarpanelspermanetbatterydetails", "gt_jobboxingoodcondition", "gt_jobboxconditondetails", "gt_casitawithwindows", "gt_casitaconditiondetails", "gt_casitaingoodcondition", "gt_casitaremovalnomination", "gt_picnictablecount", "gt_picnictabledimensions", "gt_picnictableingoodcondition", "gt_additionalstoragestructuredetails", "gt_additionalstoragestructurenotes", "gt_othershadestructuredetails", "gt_picnictablenomination", "gt_benchcount",
+"gt_benchingoodcondition", "gt_replacementmultipicnictablesizes", "gt_picnictablenominationdetails", "gt_shednominationdetails","gt_jobboxnominationsizes", "gt_jobboxnominationothersize", "gt_jobboxnominationdetails", "gt_newshadestructuretypeandsize", "gt_shadestructurenominationdetails", "gt_shadestructureingoodcondition","gt_additionalshadestructuredetails", "gt_newbenchsizes","gt_benchnominationdetails","gt_firepitpizzaovenbrickbbqcondition","gt_stagecondition","gt_greenhouseadditionaldetails","gt_greenhousecondition","gt_greenhouseusedasotherdetails","gt_newgreenhouserecommendedsize", "gt_greenhousenominationdetails", "gt_greenhouseprimarilyusedas","gt_unapprovedtoiletdetails","gt_miscellaneousstructuredetails",
+"gt_miscellaneousstructurecondition","gt_structureover120squarefeetdetails"];
+
+// Array of controls that should be shown then hidden by validation rule. Controls also have to be in hidden array(var: hideArray). 
+const displaythenhideArray = [ "gt_numberofgardenshed", "gt_shadestructureingoodcondition","gt_additionalshadestructuredetails", "gt_shedingoodcondition", "gt_greenthumbaccesstosheds", "gt_picnictablecount", "gt_picnictabledimensions", "gt_picnictableingoodcondition", "gt_jobboxingoodcondition"];
+
+//Array of controls that have a description that when hidden need description label hidden also.
+const hideDescription = ["gt_additionalstoragestructuredetails", "gt_picnictabledimensions", "gt_rainwaterharvestingsystemdetails", "gt_solarpanelswithpermanentbattery", "gt_improperappliancesdetails", "gt_sheddimensions", "gt_shednominationdetails", "gt_casitaingoodcondition", "gt_casitaconditiondetails", "gt_additionalshadestructuredetails", "gt_jobboxnominationothersize", "gt_jobboxnominationdetails", "gt_replacementmultipicnictablesizes", "gt_shadestructurenominationdetails","gt_unapprovedtoiletdetails","gt_miscellaneousstructuredetails"];
+
+// Controls that have a description label that need "*" displayed when they are set to required.
+const displayValidation = ["gt_rdpartyutilities", "gt_rainwaterharvestingsystemdetails", "gt_improperappliancesdetails", "gt_shednominationdetails", "gt_casitaingoodcondition", "gt_casitaconditiondetails", "gt_jobboxnominationdetails", "gt_additionalshadestructuredetails", "gt_jobboxnominationothersize", "gt_shadestructurenominationdetails", "gt_picnictabledimensions", "gt_sheddimensions", "gt_additionalstoragestructuredetails", "gt_casitaingoodcondition" , "gt_casitaconditiondetails", "gt_replacementmultipicnictablesizes", "gt_unapprovedtoiletdetails", "gt_miscellaneousstructuredetails"];
+                                                                   
+var con;
+var starCount = 0; 
+
+//Function to add "*" to control that has a description label
+function AddDescriptionValidation(control){
+var labelElement = $("#"+control+"_label");
+    if (labelElement.find(".required").length === 0) {        
+    labelElement.append('<span class="requiredDESC" aria-hidden="true" style="color: red;">*</span>');
+    }
+}
+
+// set starCount
+function setStarCount()
+{
+    if(starCount>0)
+    {
+        starCount=0;
+    }
+}
+// hide controls "*" when not required.
+function hideDescriptionValidation(arVControls)
+{
+    for(let vControl of arVControls){ 
+ $("#"+vControl+"_label .requiredDESC").hide();
+    }
+
+}
+
+function PassValue(txtVal){    
+
+    switch (txtVal) {
+  
+   case "Green House":
+    val =  "122850000";
+    break;
+  case "Hoop House":
+    val =  "122850001";
+    break;
+      case "N/A - None":
+    val =  "122850002";
+    break;
+}
+return val;
+}
+
+//Hide Third Party Sub Grid
+function ConfigureSections( argView,Section, title) {  
+        $("legend.section-title").each(function(){
+            
+            if(title === $(this).text())
+   {
+    if (argView === "hide"){
+        $(this).hide();
+                }
+                else
+                $(this).show();}
+  });
+              {
+    if(argView === "hide"){
+                                      //Hide sections that are not needed to be shown.
+                                    $("table[data-name='"+ Section +"']").parent().hide();                                     
+                                       } 
+ else if(argView === "show"){
+                                      //Show sections that are not needed to be shown.
+                                    $("table[data-name='"+ Section +"']").parent().show();
+                                        } 
+}
+                       }
+
+//Set Select to initial
+function SetOptionfirst(selectControl)
+{
+    if($('#'+ selectControl).is("select"))
+       {
+         $("#"+selectControl).prop('selectedIndex', -1);
+       }
+}
+
+//Function to hide controls when an array is passed as an argument and display is also passed as an argument as a boolean.
+function HideControls(arInspection, display)
+{
+    if(display){
+          //MakeRequired(arInspection);
+    for(let iControl of arInspection){ 
+   
+      if(hideArray.includes(iControl)){           
+        $('#'+ iControl+'_label').show();
+        $('#'+ iControl).show();       
+} 
+if(hideDescription.includes(iControl)){
+    //108 sub head - show    
+    // $("div[class='description above']").hide();
+    $('#'+iControl).closest("tr").show();  
+}
+             }
+
+     }
+    else {
+     MakeNotRequired(arInspection);
+for(let iControl of arInspection){
+      
+  if(hideArray.includes(iControl)){   
+        $('#'+ iControl+'_label').hide();
+        $('#'+ iControl).hide(); }
+
+if(hideDescription.includes(iControl)){    
+    $('#'+iControl).closest("tr").hide();  
+}  
+                
+}
+       }
+}
+
+function ResetControls(arInspection)
+{
+    for(let resetControl of arInspection){
+
+        if($('#'+ resetControl).is("select"))
+{
+$("#"+resetControl).prop('selectedIndex', -1);
+}
+else if($('#'+ resetControl).is("input")||$('#'+ resetControl).is("textarea"))
+{
+     $('#'+ resetControl).val(""); 
+}
+    }
+}
+
+// Multiselect Choices
+function GetChoicesValue(fieldName) {
+ var choicesField = $("#" + fieldName + "_Container");
+
+ var selectedValues = [];
+ choicesField.find('.msos-selected-display-item').each(function () {
+ selectedValues.push($(this).data('value'));
+ });
+
+ return selectedValues;
+}
+
+//function used to filter an array and return the array without con variable element.
+function retControl(ct) {
+  return ct != con;
+}
+//function used to filter an array and return the array with only con variable element.
+function retControlOne(ct) {
+  return ct === con;
+}
+
+function checkDisplayLoad(ct) {
+  return !displaythenhideArray.includes(ct);
+}
+// Function called to clear the Multi check box control when it is hidden of selected values.
+function ClearChoicesValues(fieldName){
+ var choicesField = $("#" + fieldName + "_Container");
+ var checkboxDataItem = choicesField.find("li>>input.msos-checkbox");
+ if (!!checkboxDataItem) {
+    checkboxDataItem.trigger('change', false);
+ }
+}
+ 
+
+function ClearChoicesValuesHoop(fieldName){
+    
+ var choicesField = $("#" + fieldName + "_Container");
+ var checkboxDataItem = choicesField.find("li>>input.msos-checkbox");
+
+ if (!!checkboxDataItem) {     
+ checkboxDataItem.trigger('change', false);
+ }
+}
+const arrOtherDisable = ["gt_greenthumbaccesstoshedsotherdetails","gt_jobboxnominationothersize"]; 
+function GetCLValue(id,argControl,arrControls){
+    con = argControl;   if($("#"+id).val()==='122850001' || $("#"+id).val()==='122850001' || $("#"+id).val()==='122850003' || $("#"+id+" option:selected").text() ==='Select')
+                            {
+                 HideControls(arrControls.filter(retControlOne),false);
+                                   if(arrOtherDisable.includes(argControl)){
+                                                 MakeNotRequired(arrControls.filter(retControlOne));
+                                                 MakeNotRequiredDetails(arrControls.filter(retControlOne));
+                                                      }
+                           }
+}
+
+function GetCasitaValue(argControl,arrControls){     
+   
+    if($("#gt_casitaingoodcondition").val()==='122850001'){ 
+                                     HideControls(arrControls,false); 
+                                    
+                                    $("#gt_casitaconditiondetails_label .requiredDESC").hide();
+                                     MakeNotRequired(arrControls);
+                                    MakeNotRequiredDetails(arrControls);
+                                    }
+  }
+
+function GetJobBoxValue(argControl,arrControls){     
+     
+ 
+    if($("#"+argControl).val()==='122850001' || $("#"+argControl).val()=== null){  
+                                     HideControls(arrControls,false); 
+                                    MakeNotRequiredDetails(arrControls);
+                                    }
+  }
+//Function For Green House Multi Select
+function DetailsGreenHouse(arr,id)
+{
+     if(id==="gt_gardenwithgreenhousehoophouse" ){ 
+if(arr.includes("122850000")){      
+    //ResetControls(valControls[id]);
+       HideControls(valControls[id],false);
+ MakeRequired (valControls[id]); 
+ HideControls(valControls[id],true);  
+}
+else if (arr.includes("122850001") && !arr.includes("122850000")){     
+     con="gt_greenhouseprimarilyusedas";
+      HideControls(valControls[id].filter(retControl),false);
+     ResetControls(valControls["gt_greenhouseprimarilyusedas"]);
+      ResetControls(valControls[id].filter(retControl));
+    MakeRequired (valControls[id].filter(retControlOne));
+MakeNotRequired(valControls[id].filter(retControl));
+MakeNotRequiredDetails(valControls[id].filter(retControl));
+         HideControls(valControls[id].filter(retControlOne),true); 
+ HideControls(valControls["gt_greenhouseprimarilyusedas"],false);
+}
+else if(arr.includes("122850002")){   
+     con="gt_greenhouseprimarilyusedas";
+     ResetControls(valControls["gt_greenhouseprimarilyusedas"]);
+      HideControls(valControls["gt_greenhouseprimarilyusedas"],false); 
+ResetControls(valControls[id]); 
+
+    MakeNotRequired (valControls[id]);  
+       HideControls(valControls[id],false);
+}
+else if(arr.length===0)
+{  con="gt_greenhouseprimarilyusedas";
+     ResetControls(valControls[con]);
+      HideControls(valControls[con],false);
+     ResetControls(valControls[id]);
+      MakeNotRequired (valControls[id]);
+     MakeNotRequiredDetails (valControls[id]);
+         HideControls(valControls[id],false); 
+}
+ }
+  
+}
+
+//Function takes in array of the controls for the section 5 form. To aplly validation rules for on change event.
+function Details(val,id,txtValue)
+{
+     if(id==="gt_internalwaterprovided" ){
+if(val==="122850000")
+     {
+      HideControls(valControls[id],true);
+      MakeRequired (valControls[id]);      
+     }
+else{ 
+    ResetControls(valControls[id]);
+    HideControls(valControls[id],false);   
+    MakeNotRequiredDetails(valControls[id]);
+    //MakeNotRequired (valControls[id]);         
+    }
+                                          }
+    else if(id ==="gt_rainwaterharvestingsystem")
+{
+if(val === "122850001")
+{        //a
+    con="gt_numberofrainbarrels";
+ ResetControls(valControls[id].filter(retControl));
+    MakeRequired (valControls[id].filter(retControlOne));
+         setStarCount();
+       MakeNotRequired (valControls[id].filter(retControl));
+MakeNotRequiredDetails (valControls[id].filter(retControl));
+         HideControls(valControls[id].filter(retControlOne),true);
+HideControls(valControls[id].filter(retControl),false);
+         con ="gt_rainwaterharvestingsystemdetails";
+         MakeNotRequiredDetails(valControls[id].filter(retControlOne));
+$("#"+valControls[id].filter(retControlOne)+"_label .requiredDESC").hide();
+         }
+
+else if((val === "122850002" || val === "122850003"))
+{   // c,d  
+ if(starCount===0)
+ {
+        con = "gt_rainwaterharvestingsystemdetails";  
+     ResetControls(valControls[id].filter(retControl));
+    MakeRequired (valControls[id].filter(retControlOne));
+         HideControls(valControls[id].filter(retControlOne),true);
+       //MakeNotRequired(valControls[id].filter(retControl));  
+         MakeNotRequiredDetails(valControls[id].filter(retControl));
+         HideControls(valControls[id].filter(retControl),false);  
+starCount++;
+}
+         }
+
+         else if(val === "122850004"){  
+           setStarCount();
+    con="gt_otherrainwaterharvestingsystem";
+    MakeRequired (valControls[id].filter(retControlOne));
+ ResetControls(valControls[id].filter(retControl));
+         HideControls(valControls[id].filter(retControlOne),true); 
+       MakeNotRequiredDetails (valControls[id].filter(retControl));
+         HideControls(valControls[id].filter(retControl),false);  
+       $("#gt_rainwaterharvestingsystemdetails_label .requiredDESC").hide();
+         }
+          else if(val === "122850000"){  
+           setStarCount();
+      // MakeNotRequired (valControls[id]); 
+      MakeNotRequiredDetails(valControls[id]);
+    ResetControls(valControls[id]);
+       MakeNotRequiredDetails(valControls[id].filter(retControlOne));
+         HideControls(valControls[id],false);
+       $("#"+valControls[id].filter(retControlOne)+"_label .requiredDESC").hide();
+         }
+else{setStarCount();
+ResetControls(valControls[id]);
+     MakeNotRequired (valControls[id]);
+    MakeNotRequiredDetails(valControls[id]);
+       MakeNotRequiredDetails(valControls[id].filter(retControlOne));
+         HideControls(valControls[id],false);
+ $("#gt_rainwaterharvestingsystemdetails_label .requiredDESC").hide();
+}
+}
+else if(id==="gt_waterfromadjacentbuildings" ){
+if(val==="122850000")
+     {
+           MakeRequired(valControls[id]);
+            HideControls(valControls[id],true);
+     }
+else{   
+     ResetControls(valControls[id]);  
+    MakeNotRequiredDetails(valControls[id]);
+    MakeNotRequired (valControls[id]);    
+    HideControls(valControls[id],false);     
+    }
+                                          }
+else if( id==="gt_gardenselectricitysource")
+{
+
+    if(val==="122850005")
+     {
+           MakeRequired(valControls[id]);
+            HideControls(valControls[id],true);
+     }
+else{     
+     ResetControls(valControls[id]);
+    MakeNotRequiredDetails(valControls[id]);
+    MakeNotRequired (valControls[id]);    
+    HideControls(valControls[id],false);     
+    }
+}
+
+else if(id==="gt_solarpanelspresent")
+{
+if(val==="122850000")
+     {
+           MakeRequired(valControls[id]);
+            HideControls(valControls[id],true);
+     }
+else{     
+    ResetControls(valControls[id]);
+    MakeNotRequiredDetails(valControls[id]);
+    MakeNotRequired (valControls[id]);    
+    HideControls(valControls[id],false);   
+    $("#gt_solarpanelswithpermanentbattery_label .requiredDESC").hide();
+    }
+
+}
+else if(id==="gt_solarpanelswithpermanentbattery")
+{
+if(val==="122850001" || val==="122850002")
+     {
+           MakeRequired(valControls[id]);
+            HideControls(valControls[id],true);
+     }
+else{     
+    ResetControls(valControls[id]);
+    MakeNotRequiredDetails(valControls[id]);
+    MakeNotRequired (valControls[id]);    
+    HideControls(valControls[id],false);  
+    }
+
+}
+else if(id==="gt_improperappliancespresent")
+{
+ if( val==="122850000")
+     {
+         MakeRequired(valControls[id]);
+ HideControls(valControls[id], true);  
+     }
+     else
+     {  
+     ResetControls(valControls[id]);
+   // $("span.requiredDESC").hide(); 
+$("#"+valControls[id]+"_label .requiredDESC").hide();
+        MakeNotRequiredDetails(valControls[id]); 
+     HideControls(valControls[id],false);  
+     }
+
+}
+else if(id==="gt_gardenwithshed" && val==="122850000"){  
+       $("#gt_sheddimensions_label .requiredDESC").hide();
+    MakeRequired(valControls[id]);  
+HideControls(valControls[id],true);  
+ 
+         }
+else if(id==="gt_gardenwithshed" && val==="122850003"){ 
+    $("#gt_sheddimensions_label .requiredDESC").hide();
+        MakeNotRequiredDetails(valControls[id]);
+        MakeNotRequired(valControls[id]);
+        ResetControls(valControls[id]);
+        GetCLValue(id,"gt_greenthumbaccesstoshedsotherdetails",valControls["gt_greenthumbaccesstosheds"]);             
+        HideControls(valControls[id],false); 
+       $("span.requiredDESC").hide();
+         }
+else if(id==="gt_gardenwithshed" && (val==="122850001" || val==="122850002")){
+ $("#gt_sheddimensions_label .requiredDESC").hide();
+   con="gt_numberofgardenshed";
+ ResetControls(valControls[id].filter(retControl));
+         MakeRequired (valControls[id].filter(retControl));
+       MakeNotRequiredDetails (valControls[id].filter(retControlOne));
+         HideControls(valControls[id],true);
+ 
+         }
+
+else if(id==="gt_gardenwithshed" && val===""){  
+    
+ MakeNotRequiredDetails(valControls[id]);
+MakeNotRequired(valControls[id]);  
+ GetCLValue(id,"gt_greenthumbaccesstoshedsotherdetails",valControls["gt_greenthumbaccesstosheds"]); 
+HideControls(valControls[id],true); 
+
+$("#gt_sheddimensions_label .requiredDESC").hide();
+         }
+
+else if(id==="gt_greenthumbaccesstosheds"){
+
+if(val==="122850002")
+{
+     MakeRequired (valControls[id]);
+    HideControls(valControls[id],true); 
+}
+else{
+     ResetControls(valControls[id]); 
+MakeNotRequiredDetails(valControls[id]);
+HideControls(valControls[id],false);
+}
+}
+
+else if(id==="gt_shednomination"){  
+    if(val==="122850000")
+    {
+HideControls(valControls[id],true);
+con="gt_shednominationssizes_Container";
+MakeRequired (valControls[id].filter(retControl));
+    }
+else{
+     ResetControls(valControls[id]);
+HideControls(valControls[id],false);
+MakeNotRequired (valControls[id]);
+MakeNotRequiredDetails (valControls[id]);
+ClearChoicesValues("gt_shednominationssizes");
+con="gt_shednominationdetails";
+hideDescriptionValidation(valControls[id].filter(retControlOne));
+  }
+}
+else if(id==="gt_gardenwithjobbox"){  
+    if(val==="122850000")
+   {
+ MakeRequired(valControls[id]);
+HideControls(valControls[id],true); 
+    }
+else if(val==="122850001"){    
+  MakeNotRequired(valControls[id]); 
+  MakeNotRequiredDetails(valControls[id]); 
+   HideControls(valControls[id],false);
+   SetOptionfirst("gt_jobboxingoodcondition");
+   GetJobBoxValue("gt_jobboxingoodcondition",valControls["gt_jobboxingoodcondition"]);    
+  }
+  else{
+     ResetControls(valControls[id]);
+     MakeNotRequired(valControls[id]); 
+   HideControls(valControls[id],true);
+   SetOptionfirst("gt_jobboxingoodcondition");
+   GetJobBoxValue("gt_jobboxingoodcondition",valControls["gt_jobboxingoodcondition"]);  
+  }
+}
+     else if(id==="gt_jobboxnomination" ){
+if(val==="122850000"){
+     
+         HideControls(valControls[id],true); 
+MakeRequired (valControls[id]);      
+        }
+        else{             
+    GetCLValue(id,"gt_jobboxnominationothersize",valControls["gt_jobboxnominationsizes"]);  
+     ResetControls(valControls[id]);
+         HideControls(valControls[id],false);
+MakeNotRequired (valControls[id]);
+MakeNotRequiredDetails (valControls[id]);
+$("#gt_jobboxnominationothersize_label .requiredDESC").hide();
+$("#gt_jobboxnominationdetails_label .requiredDESC").hide();
+//hideDescriptionValidation(valControls[id]);
+        }
+         }
+  else if(id==="gt_jobboxnominationsizes" ){
+if(val==="122850002"){   
+           
+        HideControls(valControls[id],true);
+       MakeRequired (valControls[id]);  
+        }
+        else{               
+            ResetControls(valControls[id]);
+           MakeNotRequiredDetails (valControls[id]);
+            HideControls(valControls[id],false);
+           hideDescriptionValidation(valControls[id]);
+        }
+         }
+  else if(id==="gt_jobboxingoodcondition" ){
+if(val==="122850001"){
+ MakeRequired(valControls[id]); 
+HideControls(valControls[id],true);
+}
+else{ ResetControls(valControls[id]);
+     MakeNotRequired(valControls[id]);
+     MakeNotRequiredDetails (valControls[id]);
+    HideControls(valControls[id],false);
+    
+}
+    
+ }
+
+     else if(id==="gt_gardenwithcasita" ){
+if(val==="122850000"){
+    MakeRequired (valControls[id]);
+    HideControls(valControls[id],true);   
+}
+else{ GetCasitaValue("gt_casitaingoodcondition",valControls["gt_casitaingoodcondition"]);
+    ResetControls(valControls[id]);
+    MakeNotRequiredDetails (valControls[id]);
+    MakeNotRequired (valControls[id]);
+      HideControls(valControls[id],false);   
+   $("#gt_casitaingoodcondition_label .requiredDESC").hide();
+     }
+ }
+ else if(id ==="gt_casitaingoodcondition")
+  {  
+     if( val==="122850001")
+     {
+         MakeRequired(valControls[id]);  
+ HideControls(valControls[id],true);  
+     }
+     else
+     { ResetControls(valControls[id]);
+        MakeNotRequiredDetails(valControls[id]); 
+ MakeNotRequired(valControls[id]); 
+  HideControls(valControls[id],false);  
+$("#"+valControls[id]+"_label .requiredDESC").hide();
+     }
+}
+   else if(id==="gt_gardenwithotherstoragestructures" ){
+    con="gt_additionalstoragestructurenotes";
+if(val==="122850000"){
+ MakeRequired (valControls[id]);
+ HideControls(valControls[id],true);
+}
+else{
+    ResetControls(valControls[id]);
+     MakeNotRequiredDetails (valControls[id]);
+     $("#gt_additionalstoragestructuredetails_label .requiredDESC").hide();
+       HideControls(valControls[id],false);
+       // $("span.requiredDESC").hide();
+}
+ }
+
+   else if(id==="gt_gardenshadestructures" ){ 
+if(val==="122850004"){
+   
+ MakeRequired (valControls[id]);
+ HideControls(valControls[id],true);
+$("#gt_additionalshadestructuredetails_label .requiredDESC").hide();
+}
+else if(val==="122850000"){
+     ResetControls(valControls[id]);
+    MakeNotRequired (valControls[id]); 
+    MakeNotRequiredDetails (valControls[id]); 
+ HideControls(valControls[id],false);
+$("#gt_additionalshadestructuredetails_label .requiredDESC").hide();
+}
+else if(val==="122850001" || val==="122850002" ||val==="122850003"){ 
+  
+    $("#gt_additionalshadestructuredetails_label .requiredDESC").hide();
+     con="gt_othershadestructuredetails";
+    ResetControls(valControls[id].filter(retControlOne));
+MakeNotRequired (valControls[id].filter(retControlOne));
+MakeNotRequiredDetails (valControls[id].filter(retControlOne));
+MakeRequired (valControls[id].filter(retControl));
+ 
+ HideControls(valControls[id].filter(retControlOne),false);
+ HideControls(valControls[id].filter(retControl),true);
+
+}
+else{
+    con="gt_othershadestructuredetails"; 
+    ResetControls(valControls[id].filter(retControlOne));
+    $("#gt_additionalshadestructuredetails_label .requiredDESC").hide();
+    HideControls(valControls[id].filter(retControl),false);
+ HideControls(valControls[id].filter(retControlOne),false);
+      MakeNotRequiredDetails(valControls[id]);   
+   MakeNotRequired(valControls[id]);    
+       HideControls(valControls[id].filter(retControl),true); 
+}
+ }
+
+ else if(id==="gt_shadestructurenomination" ){
+if(val==="122850000"){  
+    con="gt_shadestructurenominationdetails";
+         HideControls(valControls[id],true);
+        MakeRequired(valControls[id]);
+}
+else{      ResetControls(valControls[id]);
+         HideControls(valControls[id],false);
+         MakeNotRequiredDetails (valControls[id]);
+hideDescriptionValidation(valControls[id]);
+//$("span.requiredDESC").hide();
+}
+ }
+
+ else if(id==="gt_gardenwithpicnictable" ){
+if(val==="122850000"){   
+        $("#gt_picnictabledimensions_label .requiredDESC").hide();
+ MakeRequired(valControls[id]);
+ HideControls(valControls[id],true); 
+}
+else if(val==="122850001"){
+    ResetControls(valControls[id]);
+ MakeNotRequiredDetails (valControls[id]);
+MakeNotRequired(valControls[id]);
+$("#gt_picnictabledimensions_label .requiredDESC").hide();
+        HideControls(valControls[id],false);
+
+}
+else{
+    
+     MakeNotRequiredDetails (valControls[id]);
+MakeNotRequired(valControls[id]);
+HideControls(valControls[id],true);
+$("#gt_picnictabledimensions_label .requiredDESC").hide();
+}
+ }
+
+ else if(id==="gt_picnictablenomination" ){
+    //con="gt_replacementmultipicnictablesizes_ledit";
+if(val==="122850000"){
+    con="gt_replacementmultipicnictablesizes";
+ MakeRequired (valControls[id]); 
+HideControls(valControls[id],true);
+
+}
+else if(val==="122850001"){
+    ResetControls(valControls[id]); 
+     MakeNotRequiredDetails (valControls[id]);
+HideControls(valControls[id],false); 
+$("#gt_replacementmultipicnictablesizes_label .requiredDESC").hide();
+  
+ClearChoicesValues("gt_replacementmultipicnictablesizes");
+}
+else{
+  MakeNotRequiredDetails (valControls[id]);
+con="gt_picnictablenominationdetails";
+      HideControls(valControls[id],false);
+$("#gt_replacementmultipicnictablesizes_label .requiredDESC").hide();
+}
+
+ }
+
+ else if(id==="gt_gardenwithbench" ){
+ 
+if( txtValue.contains("Yes")){
+ MakeRequired (valControls[id]); 
+       HideControls(valControls[id],true);
+}
+else{
+    ResetControls(valControls[id]);
+     MakeNotRequiredDetails (valControls[id]);
+    HideControls(valControls[id],false);
+}
+ }
+
+ else if(id==="gt_benchnomination" ){
+if(val==="122850000"){
+ MakeRequired (valControls[id]);
+         HideControls(valControls[id],true);
+}
+else {ResetControls(valControls[id]);
+     MakeNotRequiredDetails (valControls[id]);
+ HideControls(valControls[id],false);
+}
+
+ }
+
+  else if(id==="gt_gardenwithfirepitpizzaovenbrickbbq" ){
+if(val==="122850000"){
+ MakeRequired (valControls[id]);
+         HideControls(valControls[id],true);
+}
+else{
+    ResetControls(valControls[id]);
+     MakeNotRequiredDetails (valControls[id]);
+         HideControls(valControls[id],false);
+}
+ }
+  else if(id==="gt_gardenwithstage" ){
+if(val==="122850000"){
+ MakeRequired (valControls[id]);
+         HideControls(valControls[id],true);
+}
+else{
+    ResetControls(valControls[id]);
+     MakeNotRequiredDetails (valControls[id]);
+         HideControls(valControls[id],false);
+}
+ }
+    else if(id==="gt_greenhouseprimarilyusedas" ){
+if(val==="122850002"){
+ MakeRequired (valControls[id]);
+         HideControls(valControls[id],true);
+}
+else{
+   
+     MakeNotRequiredDetails (valControls[id]);
+         HideControls(valControls[id],false);
+}
+ }
+ else if(id==="gt_greenhousenomination" ){
+if(val==="122850000"){
+ MakeRequired (valControls[id]);
+         HideControls(valControls[id],true);
+}
+else{
+     ResetControls(valControls[id]);
+     MakeNotRequiredDetails (valControls[id]);
+         HideControls(valControls[id],false);
+}
+ }
+  else if(id==="gt_gardenwithunapprovedtoilet" ){
+if(val==="122850000"){
+ MakeRequired (valControls[id]);
+         HideControls(valControls[id],true);
+}
+else{
+    ResetControls(valControls[id]);
+     MakeNotRequiredDetails (valControls[id]);
+         HideControls(valControls[id],false);
+$("#"+valControls[id]+"_label .requiredDESC").hide();
+//$("span.requiredDESC").hide();
+}
+ }
+   else if(id==="gt_gardenwithmiscellaneousstructure" ){
+if(val==="122850000"){
+ MakeRequired (valControls[id]);
+         HideControls(valControls[id],true);
+}
+else{  ResetControls(valControls[id]);
+    HideControls(valControls[id],false);
+     MakeNotRequiredDetails (valControls[id]);
+    MakeNotRequired (valControls[id]);
+hideDescriptionValidation(valControls[id]);
+       
+}
+ }
+    else if(id==="gt_structureover120squarefeet" ){
+if(val==="122850000"){
+ MakeRequired (valControls[id]);
+         HideControls(valControls[id],true);
+}
+else{
+    ResetControls(valControls[id]);
+     MakeNotRequiredDetails (valControls[id]);
+         HideControls(valControls[id],false);
+}
+ }
+
+ else if(id==="gt_rdpartyutilities" ){
+if(val==="122850000"){
+    boolThirdParty= true;
+    ConfigureSections( "show",Section, title);
+}
+else{ boolThirdParty= false;
+ConfigureSections( "hide",Section, title);
+}
+ }
+
+}
+
+var MakeRequired = function (fieldNameI) {
+  
+    for(let fieldName of fieldNameI)
+    { 
+    try {
+        if ($("#" + fieldName) != undefined) {
+            
+            $("#" + fieldName).prop('required', true);
+            $("#" + fieldName).closest(".control").prev().addClass("required");
+
+            var Requiredvalidator = document.createElement('span');
+            Requiredvalidator.style.display = "none";
+            Requiredvalidator.id = fieldName + "Validator";
+            Requiredvalidator.controltovalidate = fieldName;
+            Requiredvalidator.errormessage = `<a href='#${fieldName}_label'>${$(`#${fieldName}_label`).html()} is a required field.</a>`;
+            Requiredvalidator.initialvalue = "";
+            Requiredvalidator.evaluationfunction = function (){
+                var value = $("#" + fieldName).val();
+                if (value == null || value == "") {
+                    return false;
+                }else {
+                    return true;
+                }
+            };
+
+            // Add the new validator to the page validators array:
+            var duplicateFlag = false;
+            if(Page_Validators.length > 0){
+         
+                for(let i = 0; i < Page_Validators.length; i++){
+                    
+                    let currentItem = Page_Validators[i].id;
+                    
+                    if(Requiredvalidator.id == currentItem){
+                        duplicateFlag = true;
+                    }
+                }
+
+            }
+
+            if(duplicateFlag === false){
+                Page_Validators.push(Requiredvalidator);
+            }  
+        }
+if(displayValidation.includes(fieldName)){  
+AddDescriptionValidation(fieldName);
+ 
+} 
+
+
+    }
+    catch (error) {
+        errorHandler(error);
+    }
+}        
+}
+
+
+var MakeNotRequired = function (fieldNameI) {
+    for(let fieldName of fieldNameI)
+    {    
+  var count = 0;
+  for(var i =0; i < Page_Validators.length - count; i++){
+    if (Page_Validators[i - count].id == "RequiredFieldValidator" + fieldName) {
+      Page_Validators.splice(i - count, 1);
+      count++;
+    }
+  }
+  $("#" + fieldName + "_label").parent().removeClass("required");
+    }
+}
+
+var MakeNotRequiredDetails = function (fieldNameI) {
+     for(let fieldName of fieldNameI)
+    {    
+    try {
+
+        var field = $("#" + fieldName);
+        if (field != undefined && field.length > 0) {
+            field.closest(".control").prev().removeClass("required");
+            field.prop("required", false);
+
+            if (typeof (Page_Validators) == "undefined") {
+                return;
+            }
+
+            for (var i = 0; i < Page_Validators.length; i++) {
+                if (Page_Validators[i].id == fieldName + "Validator") {
+                    Page_Validators.splice(i, 1);
+                    break;
+                }
+            }
+        }
+    }
+    catch (error) {
+        errorHandler(error);
+    }
+    }
+}
+ 
+  
+
+if (window.jQuery) {
+    (function ($) {
+ 
+
+
+        $(document).ready(function () {  
+    displayFirstBreadcrumb(); 
+
+//Set JS event for numeric only input
+for(let num of arrNumericalInputs){
+    //  Start of Input Event Handlers
+    $(num).on("input", function () {
+        // Remove any character that is not a digit (0-9)
+       this.value = this.value.replace(/\D/g, '');
+        //this.value = this.value.replace(/[^1-100\.]/g,'');
+    });   //  End of Input Event Handlers
+}
+
+
+    ConfigureSections( "hide",Section, title);
+
+    $("#gt_inspectionstatus").closest("tr").hide();
+
+    var InspectionStatusValue =  $("#gt_inspectionstatus").val();  
+
+    // All form fields and subgrids would turn to raady only if Inspection Status = Submitted
+    if (InspectionStatusValue == "122850001") { 
+        applyAllReadOnlyFixes();
+    }     
+
+// Start of Third Party Structure  & Photos Subgrid handling 
+
+            // Override the default validation function
+            webFormClientValidate = function () {
+                // Define your 4 subgrids and their friendly names
+               
+                for (var i = 0; i < 1; i++) {
+                    
+            
+                    // Check if subgrid has records (header only = 1 row)
+                    if ($("#" + subgridThirdParty + " tr").length <= 1 && boolThirdParty) {
+                        showValidationModal("Please add at least one record to the Third Party Utiltity section.", subgridThirdParty);
+                        return false; // Stop at the first error found
+                    }
+                }
+
+// End of Third Party Structure  & Photos Subgrid 
+
+                return true; // Allow navigation
+            };
+
+//modal SubGrid  JS
+
+// 1. Append a single generic modal to the body
+    var modalHtml = `
+    <div class="modal fade" id="universalModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header"><h4 class="modal-title">Action Required</h4></div>
+          <div id="universalModalBody" class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    $('body').append(modalHtml);
+
+    // 2. Helper function to show modal and focus subgrid
+    window.showValidationModal = function(message, subgridId) {
+        $('#universalModalBody').text(message);
+        $('#universalModal').modal('show');
+    
+        // Focus subgrid once user clicks OK
+        $('#universalModal').one('hidden.bs.modal', function () {
+            setTimeout(function() {
+                // 1. Try to find the actual grid table inside the container
+                var $grid = $("#" + subgridId).find(".entity-grid, .view-grid").first();
+            
+                // 2. If the grid is empty, focus the "Add/Create" button so the user can take action
+                var $addButton = $("#" + subgridId).find(".btn-primary, .action-link").first();
+
+                if ($addButton.length > 0) {
+                    $addButton.focus(); // Best for UX: focus the button to add a record
+                } else if ($grid.length > 0) {
+                    $grid.attr("tabindex", -1).focus(); // Fallback: focus the table
+                } else {
+                    // Last resort: focus the main container
+                    $("#" + subgridId).attr("tabindex", -1).focus();
+                }
+            }, 200); // 200ms delay helps ensure the modal is fully cleared
+        });
+    };
+
+
+//END
+
+
+
+ for(let iControl of inspectionJS){ 
+         HideControls(valControls[iControl].filter(checkDisplayLoad),false); 
+}
+  
+     for( let control of inspectionJS){
+        Details($("#"+control).val(), control, $("#"+control+" option:selected" ).text());
+      }
+ for( let controlNo of detailsNoControl){
+      Details($("#"+controlNo).val(), controlNo, $("#"+controlNo+" option:selected" ).text());
+      }
+            
+
+      
+for( let control of inspectionJS){
+         document.getElementById(control).addEventListener("change", function(event){   
+     
+Details(event.target.value, event.target.id,event.target[event.target.selectedIndex].text);
+ });}
+         for( let controlNO of detailsNoControl){
+         document.getElementById(controlNO).addEventListener("change", function(event){           
+              
+     Details(event.target.value, event.target.id,event.target[event.target.selectedIndex].text);
+
+ });}
+
+function multiseletOnchangeEvent(id, callback) {
+        const hiddenInput = $("#" + id);
+        let previousValue = hiddenInput.val();
+try{
+        // Create a MutationObserver instance
+        const observer = new MutationObserver((mutations) => {
+            // Iterate over MutationRecord array
+            mutations.forEach(mutation => {
+                // Check if the mutation type and the attribute name match
+                // Check if value changed
+                if (
+                    mutation.type === "attributes" &&
+                    mutation.attributeName === "value" &&
+                    hiddenInput.val() !== previousValue
+                ) {
+                    //previousValue = hiddenInput.val();                   
+                    callback.call(hiddenInput[0]);
+                }
+            });
+        });
+
+        observer.observe(hiddenInput[0], { attributes: true });
+}
+catch (error) {
+        errorHandler(error);
+    }
+    }
+
+    multiseletOnchangeEvent("gt_gardenwithgreenhousehoophouse", function () {
+        const val = $(this).val();
+       
+  try{
+        if (val && val !== '') {
+            const data = JSON.parse(val);
+            data.forEach(function(item) {             
+                arrValues.push(PassValue(item.Label.UserLocalizedLabel.Label));
+            });              
+                        DetailsGreenHouse(arrValues ,"gt_gardenwithgreenhousehoophouse");
+        }
+        else
+        {
+            arrValues.length = 0;
+             DetailsGreenHouse(arrValues ,"gt_gardenwithgreenhousehoophouse");
+        }}
+        catch (error) {
+        errorHandler(error);
+    }
+    });
+
+     //multiseletOnchangeEvent("gt_gardenwithgreenhousehoophouse");
+
+        // function to turn the whole form to ready only
+        function applyAllReadOnlyFixes() {
+            // 1. REGULAR FIELDS (Input, Select, Textarea)
+            $(".entity-form, .metadata-form").find("input, select, textarea").each(function () {
+                var $field = $(this);
+                $field.css({
+                    "pointer-events": "none",
+                    "background-color": "#f3f3f3",
+                    "cursor": "not-allowed"
+                }).attr("tabindex", "-1");
+
+                if ($field.hasClass("lookup")) {
+                    $field.siblings(".input-group-btn").hide();
+                }
+            });
+
+            // 2. MULTI-SELECT & PCF CONTROLS
+            // We use a helper to target the complex HTML generated by Multi-selects
+            var multiSelectSelectors = ".ms-TagItem-close, .ms-BasePicker-input, .ms-ComboBox-Input, .msos-container, .ms-BasePicker-text, .choices__inner";
+        
+            $(multiSelectSelectors).css({
+                "pointer-events": "none",
+                "background-color": "#f3f3f3",
+                "cursor": "not-allowed"
+            });
+            // Hide the 'X' buttons specifically
+            $(".ms-TagItem-close, .choices__button, .msos-selected-display-item-close").hide();
+
+            // 3. SUBGRIDS
+            // Subgrids load late, so we attach the logic to the 'loaded' event
+            $(".entity-grid").on("loaded", function () {
+                $(this).find(".grid-actions").hide(); // Hide 'Create' buttons
+                $(this).find(".dropdown-menu").remove(); // Hide 'Edit/Delete' menu
+                $(this).find(".btn-default.btn-xs").hide(); // Hide individual row buttons
+            });
+
+            // 4. PERSISTENCE (MutationObserver)
+            // This watches for Multi-select fields that might re-render after the script runs
+            var observer = new MutationObserver(function () {
+                $(multiSelectSelectors).css({ "pointer-events": "none", "background-color": "#f3f3f3" });
+                $(".ms-TagItem-close, .choices__button").hide();
+            });
+
+            var formNode = document.querySelector('.entity-form');
+            if (formNode) {
+                observer.observe(formNode, { childList: true, subtree: true });
+            }
+        }
+
+        // End of function  applyAllReadOnlyFixes()
+
+        // function to mimic "Next" button styling to "Close" button
+
+        setTimeout(function() {
+            // 1. Inject CSS with INCREASED margin-left
+            $("<style>")
+                .prop("type", "text/css")
+                .html(`
+                    .custom-oval-btn {
+                        background: linear-gradient(to bottom, #76a049 0%, #588233 100%) !important;
+                        border-radius: 100px !important;
+                        border: 4px solid #000000 !important;
+                        box-shadow: inset 0 0 0 3px #ffffff !important;
+                        color: #ffffff !important;
+                        font-weight: bold !important;
+                        font-size: 18px !important; /* <--- ADDED THIS LINE */                        
+                        padding: 10px 0 !important;
+                        min-width: 140px !important; 
+                        display: inline-block !important;
+                        cursor: pointer;
+                        outline: none;
+                        margin-left: 10px !important; /* Increased from 10px to 35px */
+                        text-align: center;
+                        transition: background 0.2s ease;
+                    }
+                    .custom-oval-btn:hover {
+                        background: linear-gradient(to bottom, #999999 0%, #666666 100%) !important;
+                        color: #ffffff !important;
+                    }
+                `)
+                .appendTo("head");
+
+            // 2. Create the Close button
+            var $wrapper = $('<div class="btn-group"></div>');
+            var $closeBtn = $('<input type="button" value="Close" id="myCloseBtn" class="btn btn-primary button next submit-btn custom-oval-btn" />');
+            $wrapper.append($closeBtn);
+
+            // 3. Inject it next to the 'Next' button
+            var $nextBtnParent = $(".actions input.next").parent();
+    
+            if ($nextBtnParent.length > 0) {
+                $nextBtnParent.after($wrapper);
+            } else {
+                $(".actions").append($wrapper);
+            }
+
+            // 4. Click Event for Redirection
+            $(document).on("click", "#myCloseBtn", function() {
+                //window.location.href = '/GT-Site-Inspections-View';
+                window.location.href = '/GT-Site-Visit-View/';
+            });
+
+        }, 500);    
+        
+        // End of setTimeout function  
+
+
+            });    
+        
+    }(window.jQuery));
+}
