@@ -1,0 +1,41 @@
+function setGardenMemberFullName(executionContext) { 
+
+  // Function-level strict mode syntax
+  "use strict";
+
+    var formContext = executionContext.getFormContext();
+    var formType = formContext.ui.getFormType();
+    var isNewRecord;
+    
+    if (formType === 1) { isNewRecord = true; } // 1 = Create (New Record)
+    else if (formType === 2) { isNewRecord = false; } // 2 = Update (Existing Record)
+
+    console.log("setGardenMemberFullName start .... isNewRecord: " + isNewRecord);
+
+    var maxGMIDValue = 0;
+    if (isNewRecord == true) {
+    Xrm.WebApi.retrieveMultipleRecords("gt_gardenmembers", 
+          "?$select=gt_gardenmembersidauto&$orderby=gt_gardenmembersidauto desc&$top=1").then(
+        function success(result) {
+            if (result.entities.length > 0) {
+                maxGMIDValue = Number(result.entities[0].gt_gardenmembersidauto);
+                console.log("Max gardenmembersidauto: " + maxGMIDValue);
+
+                maxGMIDValue++;
+                console.log("New gardenmembersidauto: " + maxGMIDValue);
+                formContext.getAttribute("gt_gardenmembersidauto").setValue(maxGMIDValue);
+            } else {
+               console.log("Max gardenmembersidauto: No records found.");
+               formContext.getAttribute("gt_gardenmembersidauto").setValue(1);
+            }
+        },
+        function(error) { console.log("Error (gt_gardenmembersidauto): " + error.message); }
+    ); }
+
+
+    var firstname = formContext.getAttribute("gt_firstname").getValue();
+    var lastname = formContext.getAttribute("gt_lastname").getValue();
+
+    if (firstname && lastname) { formContext.getAttribute("gt_name").setValue(firstname + " " + lastname); }
+
+}
