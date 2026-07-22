@@ -1,0 +1,31 @@
+function getParksIDForTheGardenPML(executionContext) {
+    console.log("getParksIDForTheGarden start ....");
+
+    var formContext = executionContext.getFormContext();
+    var lookupGarden = formContext.getAttribute("gt_gardeninfo"); 
+    var ParksIDField = formContext.getAttribute("gt_parksid"); 
+
+    if (lookupGarden && lookupGarden.getValue() != null) {
+        console.log("getParksIDForTheGarden step 1 ...."); 
+
+        var lookupGardenValue = lookupGarden.getValue();
+        console.log("lookupGarden.getValue ...." + ' ' + 
+        lookupGardenValue[0].name + ' ' + lookupGardenValue[0].id);
+
+        Xrm.WebApi.retrieveRecord("gt_gardeninfo", 
+         lookupGardenValue[0].id, "?$select=gt_parksid").then(
+            function success(result) {
+                console.log("Parks ID: " + result.gt_parksid);
+                ParksIDField.setValue(result.gt_parksid); 
+            },
+            function error(error) {
+                console.log(error.message);
+            });
+
+   }
+
+    else {
+        ParksIDField.setValue(null);
+         }
+
+}
