@@ -3,7 +3,6 @@ const ReasonForNoAccessToGardenFieldName = "gt_reasonfornoaccesstogarden";
 const ReasonForNoAccessToGardenDetailsFieldName = "gt_reasonfornoaccesstogardendetails";
 const LockboxLocationFieldName ="gt_lockboxlocation";
 
-
 // Function to make a field required and add a custom validator
 var MakeRequired = function (fieldName) {
     
@@ -74,10 +73,35 @@ var MakeNotRequired = function (fieldName) {
     }
 }
 
+//Add First Breadcrumb to Step 2 of SIF: 
+let displayFirstBreadcrumb = function(){
+ let imgPath =  `/GT-Site-Visits-Multistep-Form/GT-Breadcrumbs_0`;
+ console.log("Gates & Garden Access" );
+    $("li").each(function(){
+        let curr_index = $(this).index();
+        let active_index = $(".active").index();
+
+        if($(this).hasClass("active")){
+        //   $("li:not(.active)").addClass("hidden").removeClass("incomplete");
+        $("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
+            $(this).addClass("new-breadcrumb-active").removeClass("active"); 
+            $(this).html(`<img src=${imgPath}${curr_index}.png class=hero-image>`); 
+            console.log("This is the dynamic function");
+        };
+   if(curr_index > active_index ){
+            console.log(curr_index + "vs" + active_index );
+            $(this).addClass("hidden");
+        }
+
+    });
+};
 
 if (window.jQuery) {
    (function ($) {
       $(document).ready(function () {
+
+        //Breadcrumb display image header
+ displayFirstBreadcrumb();
 
  //alert("JNG - TESTING - Step 2 Gates and Garden Access");
 
@@ -89,7 +113,6 @@ if (window.jQuery) {
          if (InspectionStatusValue == "122850001") { 
             applyAllReadOnlyFixes();
          } 
-
 
         // 1. Initial check when form loads 
 
@@ -316,7 +339,7 @@ if (window.jQuery) {
         // End of setTimeout function
 
 
-
       });
    }(window.jQuery));
 }
+
