@@ -28,7 +28,7 @@ let displayFirstBreadcrumb = function(){
         //   $("li:not(.active)").addClass("hidden");
         $("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
             $(this).addClass("new-breadcrumb-active").removeClass("active"); 
-            $(this).html(`<img src=${imgPath}${curr_index}.png>`); 
+            $(this).html(`<img src=${imgPath}${curr_index}.png class=hero-image>`); 
             console.log("This is the dynamic function");
         };
   
@@ -47,74 +47,57 @@ let displayFirstBreadcrumb = function(){
 
 
 var MakeRequired = function (fieldName) {
-    
     try {
-        if ($("#" + fieldName) != undefined) {
-            
+        if ($("#" + fieldName).length > 0) { // Safer check than != undefined
             $("#" + fieldName).prop('required', true);
             $("#" + fieldName).closest(".control").prev().addClass("required");
+
+            // Clean up the text: strip out any asterisks or HTML tags already in the label
+            var cleanLabelText = $("#" + fieldName + "_label").clone().children().remove().end().text().trim();
+            if (!cleanLabelText) {
+                cleanLabelText = "This field";
+            }
 
             var Requiredvalidator = document.createElement('span');
             Requiredvalidator.style.display = "none";
             Requiredvalidator.id = fieldName + "Validator";
-
             Requiredvalidator.controltovalidate = fieldName;
-            Requiredvalidator.errormessage = `<a href='#${fieldName}_label'>${$(`#${fieldName}_label`).html()} is a required field.</a>`;
+            Requiredvalidator.errormessage = `<a href='#${fieldName}_label'>${cleanLabelText} is a required field.</a>`;
             Requiredvalidator.initialvalue = "";
-            Requiredvalidator.evaluationfunction = function (){
+            Requiredvalidator.evaluationfunction = function () {
                 var value = $("#" + fieldName).val();
-            
-                if (value == null || value == "") {
-
-                    return false;
-                }else {
-
-                    return true;
-                }
+                return !(value == null || value.trim() === "");
             };
 
-            // Add the new validator to the page validators array:
-            var duplicateFlag = false;
-            if(Page_Validators.length > 0){
-
-                for(let i = 0; i < Page_Validators.length; i++){
-                    
-                    let currentItem = Page_Validators[i].id;
-                    
-                    if(Requiredvalidator.id == currentItem){
-
-                        duplicateFlag = true;
-                    }
-                }
+            // Always clear any pre-existing duplicate validators first
+            if (typeof (Page_Validators) !== 'undefined') {
+                Page_Validators = Page_Validators.filter(function (validator) {
+                    return validator.id !== Requiredvalidator.id;
+                });
+                
+                // Safe to push now knowing duplicates are eradicated
+                Page_Validators.push(Requiredvalidator);
             }
-
-            if(duplicateFlag === false){
-                 Page_Validators.push(Requiredvalidator);
-            }  
         }
-    }
-    catch (error) {
+    } catch (error) {
         errorHandler(error);
     }
-             
 }
 
 var MakeNotRequired = function (fieldName) {
     try {
-        if ($("#" + fieldName) != undefined) {
+        if ($("#" + fieldName).length > 0) {
             $("#" + fieldName).closest(".control").prev().removeClass("required");
             $("#" + fieldName).prop('required', false);
 
-            for (i = 0; i < Page_Validators.length; i++) {
-                if (Page_Validators[i].id == fieldName + "Validator") {
-                   
-                    Page_Validators.splice(i, 1);
-                    break; // Once found and removed, exit the loop
-                }
+            // Reconstruct the array excluding ALL validators matching this field id
+            if (typeof (Page_Validators) !== 'undefined') {
+                Page_Validators = Page_Validators.filter(function (validator) {
+                    return validator.id !== (fieldName + "Validator");
+                });
             }
         }
-    }
-    catch (error) {
+    } catch (error) {
         errorHandler(error);
     }
 }
@@ -205,19 +188,17 @@ displayFirstBreadcrumb();
         // 1. Append a single generic modal to the body
         var modalHtml = `
         <div class="modal fade" id="universalModal" tabindex="-1" role="dialog">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header"><h4 class="modal-title">Action Required</h4></div>
-              <div id="universalModalBody" class="modal-body"></div>
-              <div class="modal-footer">
-                <!--
-                <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
-                -->
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
-              </div>
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header"><h4 class="modal-title">Action Required</h4></div>
+                    <div id="universalModalBody" class="modal-body"></div>
+                    <div class="modal-footer">
+                        <!-- Keep both attributes for multi-environment compatibility -->
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>`;
+        </div>`;  
         $('body').append(modalHtml);
 
         // 2. Helper function to show modal and focus subgrid
@@ -711,7 +692,7 @@ displayFirstBreadcrumb();
         }
 
 
-        // Function to toggle Other Access Method visibility
+        // Function to toggle Adjacent Properties Nuisance Condition visibility
         function toggleNuisanceConditionDetails() {
             var selectedValue =  $("#gt_adjacentpropertiesnuisancecondition").val();
             // Check for 'Yes' value (Adjacent Properties Nuisance Condition)
