@@ -10,7 +10,7 @@ let displayFirstBreadcrumb = function(){
         //   $("li:not(.active)").addClass("hidden");
          $("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
             $(this).addClass("new-breadcrumb-active").removeClass("active"); 
-            $(this).html(`<img src=${imgPath}${curr_index}.png>`); 
+            $(this).html(`<img src=${imgPath}${curr_index}.png class=hero-image>`); 
             console.log("This is the dynamic function");
         };
   
@@ -162,10 +162,10 @@ const hideArray =["gt_rpzlock", "gt_numberofrainbarrels", "gt_otherrainwaterharv
 const displaythenhideArray = [ "gt_numberofgardenshed", "gt_shadestructureingoodcondition","gt_additionalshadestructuredetails", "gt_shedingoodcondition", "gt_greenthumbaccesstosheds", "gt_picnictablecount", "gt_picnictabledimensions", "gt_picnictableingoodcondition", "gt_jobboxingoodcondition"];
 
 //Array of controls that have a description that when hidden need description label hidden also.
-const hideDescription = ["gt_additionalstoragestructuredetails", "gt_picnictabledimensions", "gt_rainwaterharvestingsystemdetails", "gt_solarpanelswithpermanentbattery", "gt_improperappliancesdetails", "gt_sheddimensions", "gt_shednominationdetails", "gt_casitaingoodcondition", "gt_casitaconditiondetails", "gt_additionalshadestructuredetails", "gt_jobboxnominationothersize", "gt_jobboxnominationdetails", "gt_replacementmultipicnictablesizes", "gt_shadestructurenominationdetails","gt_unapprovedtoiletdetails","gt_miscellaneousstructuredetails"];
+const hideDescription = ["gt_additionalstoragestructuredetails", "gt_picnictabledimensions", "gt_rainwaterharvestingsystemdetails", "gt_solarpanelswithpermanentbattery", "gt_improperappliancesdetails", "gt_sheddimensions", "gt_shednominationdetails", "gt_shednominationssizes", "gt_casitaingoodcondition", "gt_casitaconditiondetails", "gt_additionalshadestructuredetails", "gt_jobboxnominationothersize", "gt_jobboxnominationdetails", "gt_replacementmultipicnictablesizes", "gt_shadestructurenominationdetails","gt_unapprovedtoiletdetails","gt_miscellaneousstructuredetails"];
 
 // Controls that have a description label that need "*" displayed when they are set to required.
-const displayValidation = ["gt_rdpartyutilities", "gt_rainwaterharvestingsystemdetails", "gt_improperappliancesdetails", "gt_shednominationdetails", "gt_casitaingoodcondition", "gt_casitaconditiondetails", "gt_jobboxnominationdetails", "gt_additionalshadestructuredetails", "gt_jobboxnominationothersize", "gt_shadestructurenominationdetails", "gt_picnictabledimensions", "gt_sheddimensions", "gt_additionalstoragestructuredetails", "gt_casitaingoodcondition" , "gt_casitaconditiondetails", "gt_replacementmultipicnictablesizes", "gt_unapprovedtoiletdetails", "gt_miscellaneousstructuredetails"];
+const displayValidation = ["gt_rdpartyutilities", "gt_rainwaterharvestingsystemdetails", "gt_improperappliancesdetails", "gt_shednominationdetails", "gt_shednominationssizes", "gt_solarpanelswithpermanentbattery", "gt_casitaingoodcondition", "gt_casitaconditiondetails", "gt_jobboxnominationdetails", "gt_additionalshadestructuredetails", "gt_jobboxnominationothersize", "gt_shadestructurenominationdetails", "gt_picnictabledimensions", "gt_sheddimensions", "gt_additionalstoragestructuredetails", "gt_casitaingoodcondition" , "gt_casitaconditiondetails", "gt_replacementmultipicnictablesizes", "gt_unapprovedtoiletdetails", "gt_miscellaneousstructuredetails"];
                                                                    
 var con;
 var starCount = 0; 
@@ -565,7 +565,7 @@ $("#"+valControls[id]+"_label .requiredDESC").hide();
      }
 
 }
-else if(id==="gt_gardenwithshed" && val==="122850000"){  
+else if(id==="gt_gardenwithshed" && (val==="122850000" || val==="122850001"|| val==="122850002")){   
        $("#gt_sheddimensions_label .requiredDESC").hide();
     MakeRequired(valControls[id]);  
 HideControls(valControls[id],true);  
@@ -580,15 +580,7 @@ else if(id==="gt_gardenwithshed" && val==="122850003"){ 
         HideControls(valControls[id],false); 
        $("span.requiredDESC").hide();
          }
-else if(id==="gt_gardenwithshed" && (val==="122850001" || val==="122850002")){
- $("#gt_sheddimensions_label .requiredDESC").hide();
-   con="gt_numberofgardenshed";
- ResetControls(valControls[id].filter(retControl));
-         MakeRequired (valControls[id].filter(retControl));
-       MakeNotRequiredDetails (valControls[id].filter(retControlOne));
-         HideControls(valControls[id],true);
- 
-         }
+
 
 else if(id==="gt_gardenwithshed" && val===""){  
     
@@ -628,6 +620,8 @@ MakeNotRequired (valControls[id]);
 MakeNotRequiredDetails (valControls[id]);
 ClearChoicesValues("gt_shednominationssizes");
 con="gt_shednominationdetails";
+hideDescriptionValidation(valControls[id].filter(retControlOne));
+con="gt_shednominationssizes";
 hideDescriptionValidation(valControls[id].filter(retControlOne));
   }
 }
@@ -1117,16 +1111,17 @@ for(let num of arrNumericalInputs){
 // 1. Append a single generic modal to the body
     var modalHtml = `
     <div class="modal fade" id="universalModal" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header"><h4 class="modal-title">Action Required</h4></div>
-          <div id="universalModalBody" class="modal-body"></div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
-          </div>
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header"><h4 class="modal-title">Action Required</h4></div>
+                <div id="universalModalBody" class="modal-body"></div>
+                <div class="modal-footer">
+                    <!-- Keep both attributes for multi-environment compatibility -->
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>`;
+    </div>`;  
     $('body').append(modalHtml);
 
     // 2. Helper function to show modal and focus subgrid
