@@ -9,7 +9,7 @@ let displayFirstBreadcrumb = function(){
         if($(this).hasClass("active")){
           $("li:not(.active)").addClass("hidden");
             $(this).addClass("new-breadcrumb-active").removeClass("active"); 
-            $(this).html(`<img src=${imgPath}${curr_index}.png>`); 
+            $(this).html(`<img src=${imgPath}${curr_index}.png class=hero-image>`); 
             console.log("This is the dynamic function");
         };
   
