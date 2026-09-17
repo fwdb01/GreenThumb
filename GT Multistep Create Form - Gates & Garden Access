@@ -87,7 +87,7 @@ let displayFirstBreadcrumb = function(){
         //   $("li:not(.active)").addClass("hidden").removeClass("incomplete");
         $("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
             $(this).addClass("new-breadcrumb-active").removeClass("active"); 
-            $(this).html(`<img src=${imgPath}${curr_index}.png>`); 
+            $(this).html(`<img src=${imgPath}${curr_index}.png class=hero-image>`); 
             console.log("This is the dynamic function");
         };
    if(curr_index > active_index ){
@@ -186,13 +186,13 @@ displayFirstBreadcrumb();
             var selectedValue =  $("#gt_gardenlockmethod").val();
             if (selectedValue === "122850003") { // Check for 'Lockbox' value (Garden Lock Method)
                 //$("#" + multiSelectField).closest('tr').hide();
-                $("#gt_lockboxlocation").show();
-                $("#gt_lockboxlocation").show(); 
+                //$("#gt_lockboxlocation").show();
+                //$("#gt_lockboxlocation").show(); 
                 MakeRequired(LockboxLocationFieldName);                
             } else {
                 //$("#" + multiSelectField).closest('tr').show();
-                $("#gt_lockboxlocation").val('');
-                $("#gt_lockboxlocation").hide();
+                //$("#gt_lockboxlocation").val('');
+                //$("#gt_lockboxlocation").hide();
                 //$("#gt_lockboxlocation_label").hide();  
                 MakeNotRequired(LockboxLocationFieldName);               
             }            
