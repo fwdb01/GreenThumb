@@ -1,8 +1,33 @@
+//Add First Breadcrumb to Step 1 of SIF: 
+let displayFirstBreadcrumb = function(){
+ let imgPath =  `/GT-Site-Visits-Multistep-Form/GT-Breadcrumbs_0`;
+ console.log("General Information" );
+    $("li").each(function(){
+        let curr_index = $(this).index();
+        let active_index = $(".active").index();
+      
+        if($(this).hasClass("active")){
+            // console.log("Hasclass", this)
+            // $("li:not(.active)").addClass("hidden");
+            $("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
+            $(this).addClass("new-breadcrumb-active").removeClass("active");             
+            $(this).html(`<img src=${imgPath}${curr_index}.png class=hero-image>`); 
+            console.log("This is the dynamic function");
+        };
+
+ if(curr_index > active_index ){
+            console.log(curr_index + "vs" + active_index );
+            $(this).addClass("hidden");
+            console.log("Addclass", this, $(this).addClass("hidden"))
+        }
+
+    });
+};
 if (window.jQuery) {
    (function ($) {
       $(document).ready(function () {
-
- 
+//Breadcrumb display image header
+ displayFirstBreadcrumb();
 //alert("JNG - TESTING - General Information");
 
 
