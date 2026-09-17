@@ -82,7 +82,7 @@ let displayFirstBreadcrumb = function(){
         //   $("li:not(.active)").addClass("hidden");
         $("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
             $(this).addClass("new-breadcrumb-active").removeClass("active"); 
-            $(this).html(`<img src=${imgPath}${curr_index}.png>`); 
+            $(this).html(`<img src=${imgPath}${curr_index}.png class=hero-image>`); 
             console.log("This is the dynamic function");
         };
   
@@ -231,6 +231,9 @@ displayFirstBreadcrumb();
         // Function to toggle Garden Policy Enforcement visibility and required status of Award Consideration
         function toggleAwardConsideration() {
             var selectedValue =  $("#gt_gardenpolicyenforcement").val();    
+
+            MakeNotRequired(AwardConsiderationFieldName);
+                        
             // Check for "No, they're doing great and deserve some special recognition" value (garden policy enforcement)
             if (selectedValue == "122850004") { 
                 $("#gt_awardconsideration").show();
