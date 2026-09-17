@@ -15,7 +15,7 @@ let displayFirstBreadcrumb = function(){
         //   $("li:not(.active)").addClass("hidden");
         $("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
             $(this).addClass("new-breadcrumb-active").removeClass("active"); 
-            $(this).html(`<img src=${imgPath}${curr_index}.png>`); 
+            $(this).html(`<img src=${imgPath}${curr_index}.png class=hero-image>`); 
             console.log("This is the dynamic function");
         };
   
@@ -148,19 +148,17 @@ if (window.jQuery) {
         // 1. Append a single generic modal to the body
         var modalHtml = `
         <div class="modal fade" id="universalModal" tabindex="-1" role="dialog">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header"><h4 class="modal-title">Action Required</h4></div>
-              <div id="universalModalBody" class="modal-body"></div>
-              <div class="modal-footer">
-                <!--
-                     <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
-                -->
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
-              </div>
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header"><h4 class="modal-title">Action Required</h4></div>
+                    <div id="universalModalBody" class="modal-body"></div>
+                    <div class="modal-footer">
+                        <!-- Keep both attributes for multi-environment compatibility -->
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>`;
+        </div>`;  
         $('body').append(modalHtml);
 
         // 2. Helper function to show modal and focus subgrid
