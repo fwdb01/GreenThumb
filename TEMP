@@ -1,0 +1,233 @@
+const OtherAccessMethodFieldName = "gt_otheraccessmethod";
+const ReasonForNoAccessToGardenFieldName = "gt_reasonfornoaccesstogarden";
+const ReasonForNoAccessToGardenDetailsFieldName = "gt_reasonfornoaccesstogardendetails";
+const LockboxLocationFieldName = "gt_lockboxlocation";
+
+// Function to make a field required and add a custom validator
+var MakeRequired = function (fieldName) {
+    try {
+        var $field = $("#" + fieldName);
+        if ($field.length > 0) { 
+            $field.prop('required', true);
+            $field.closest(".control").prev().addClass("required");
+
+            var Requiredvalidator = document.createElement('span');
+            Requiredvalidator.style.display = "none";
+            Requiredvalidator.id = fieldName + "Validator";
+            Requiredvalidator.controltovalidate = fieldName;
+            Requiredvalidator.errormessage = `<a href='#${fieldName}_label'>${$(`#${fieldName}_label`).html()} is a required field.</a>`;
+            Requiredvalidator.initialvalue = "";
+            Requiredvalidator.evaluationfunction = function () {
+                var value = getControlValue(fieldName); 
+                return (value !== null && value !== "");
+            };
+
+            var duplicateFlag = false;
+            if (typeof Page_Validators !== 'undefined' && Page_Validators.length > 0) {
+                for (let i = 0; i < Page_Validators.length; i++) {
+                    if (Requiredvalidator.id === Page_Validators[i].id) {
+                        duplicateFlag = true;
+                        break;
+                    }
+                }
+            }
+
+            if (duplicateFlag === false && typeof Page_Validators !== 'undefined') {
+                Page_Validators.push(Requiredvalidator);
+            }  
+        }
+    }
+    catch (error) {
+        if (typeof errorHandler === 'function') errorHandler(error);
+    }
+};
+
+// Function to make a field not required and remove validators
+var MakeNotRequired = function (fieldName) {
+    try {
+        var $field = $("#" + fieldName);
+        if ($field.length > 0) { 
+            $field.closest(".control").prev().removeClass("required");
+            $field.prop('required', false);
+
+            if (typeof Page_Validators !== 'undefined') {
+                for (var i = 0; i < Page_Validators.length; i++) {
+                    if (Page_Validators[i].id === fieldName + "Validator") {
+                        Page_Validators.splice(i, 1);
+                        break; 
+                    }
+                }
+            }
+        }
+    }
+    catch (error) {
+        if (typeof errorHandler === 'function') errorHandler(error);
+    }
+};
+
+// Universal Helper utility to extract Choice data accurately on both Desktop & Mobile layouts
+var getControlValue = function (fieldName) {
+    var $el = $("#" + fieldName);
+    if ($el.length === 0) return "";
+    
+    if ($el.is("select")) {
+        return $el.val() || "";
+    }
+    
+    var $checkedRadio = $("input[name='" + fieldName + "']:checked");
+    if ($checkedRadio.length > 0) {
+        return $checkedRadio.val() || "";
+    }
+    
+    return $el.val() || "";
+};
+
+// Add First Breadcrumb to Step 2 of SIF
+let displayFirstBreadcrumb = function(){
+    let imgPath =  `/GT-Site-Visits-Multistep-Form/GT-Breadcrumbs_0`;
+    console.log("Gates & Garden Access" );
+    
+    var $wizardBar = $(".progress-indicator, .wizard-steps, ul.nav-tabs, .crmEntityFormView .steps");
+    
+    if($wizardBar.length > 0) {
+        let active_index = $wizardBar.find(".active").index();
+
+        $wizardBar.find("li").each(function(){
+            let curr_index = $(this).index();
+
+            if($(this).hasClass("active")){
+                $wizardBar.find("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
+                $(this).addClass("new-breadcrumb-active").removeClass("active"); 
+                $(this).html(`<img src=${imgPath}${curr_index}.png class=hero-image>`); 
+                console.log("This is the dynamic function");
+            }
+            if(curr_index > active_index ){
+                console.log(curr_index + "vs" + active_index );
+                $(this).addClass("hidden");
+            }
+        });
+    }
+};
+
+if (window.jQuery) {
+   (function ($) {
+      $(document).ready(function () {
+
+         //Breadcrumb display image header
+         displayFirstBreadcrumb();
+
+//alert("JNG - TESTING - Step 2 Gates and Garden Access");
+
+         $("#gt_inspectionstatus").closest("tr").hide(); 
+         var InspectionStatusValue = $("#gt_inspectionstatus").val();  
+
+         // All form fields and subgrids would turn to raady only if Inspection Status = Submitted
+         if (InspectionStatusValue == "122850001") { 
+            if (typeof applyAllReadOnlyFixes === 'function') applyAllReadOnlyFixes();
+         } 
+
+         // 1. Initial execution checks when form loads 
+         toggleReasonForNoAccessToGarden(); 
+         toggleReasonForNoAccessToGardenDetails();  
+         toggleOtherAccessMethod();
+         toggleLockboxLocation();        
+
+         // 2. Bind change events to Choice fields
+         $(document).on("change", "#gt_easyaccesstogarden, input[name='gt_easyaccesstogarden']", function() {
+             toggleReasonForNoAccessToGarden();
+         });
+
+         $(document).on("change", "#gt_reasonfornoaccesstogarden, input[name='gt_reasonfornoaccesstogarden']", function() {
+             toggleReasonForNoAccessToGardenDetails();
+         }); 
+        
+         $(document).on("change", "#gt_gardenlockmethod, input[name='gt_gardenlockmethod']", function() {
+             toggleOtherAccessMethod();
+             toggleLockboxLocation();            
+         });  
+
+         // 3. Functions to toggle visibility and required status of dependent fields
+         function toggleReasonForNoAccessToGarden() {
+            var selectedValue = getControlValue("gt_easyaccesstogarden"); 
+        
+            // Check for 'No' value (Easy Access to Garden)
+            if (selectedValue == "122850001") { // 'No' value
+                // FIXED: Target the closest table row container to show everything uniformly
+                $("#gt_reasonfornoaccesstogarden").closest("tr").show();
+                $("#gt_reasonfornoaccesstogarden_label").show(); 
+                MakeRequired(ReasonForNoAccessToGardenFieldName); 
+            } else {
+                // Safely clear out down-tree sub-dependencies first
+                $("#gt_reasonfornoaccesstogardendetails").val('');
+                $("#gt_reasonfornoaccesstogardendetails").closest("tr").hide();
+                $("#gt_reasonfornoaccesstogardendetails_label").hide(); 
+                MakeNotRequired(ReasonForNoAccessToGardenDetailsFieldName);  
+                        
+                var $reasonEl = $("#gt_reasonfornoaccesstogarden");
+                if ($reasonEl.is("select")) {
+                    $reasonEl.prop('selectedIndex', -1);
+                } else {
+                    $("input[name='gt_reasonfornoaccesstogarden']").prop('checked', false);
+                }
+                
+                // FIXED: Target the closest table row container to completely clear duplicates out
+                $reasonEl.closest("tr").hide();
+                $("#gt_reasonfornoaccesstogarden_label").hide();  
+                MakeNotRequired(ReasonForNoAccessToGardenFieldName);
+            }        
+         }
+
+         // Function to toggle Reason for No Access to Garden Details visibility
+         function toggleReasonForNoAccessToGardenDetails() { 
+            var selectedValue = getControlValue("gt_reasonfornoaccesstogarden");
+
+            // Check for 'Other' value (Reason for No Access to Garden)
+            if (selectedValue == "122850005") { // 'Other' value
+                $("#gt_reasonfornoaccesstogardendetails").closest("tr").show();
+                $("#gt_reasonfornoaccesstogardendetails_label").show(); 
+                MakeRequired(ReasonForNoAccessToGardenDetailsFieldName); 
+            } else {
+                $("#gt_reasonfornoaccesstogardendetails").val('');
+                $("#gt_reasonfornoaccesstogardendetails").closest("tr").hide();
+                $("#gt_reasonfornoaccesstogardendetails_label").hide();  
+                MakeNotRequired(ReasonForNoAccessToGardenDetailsFieldName);              
+            }          
+         }
+
+         function toggleLockboxLocation() {
+            var selectedValue = getControlValue("gt_gardenlockmethod");
+            
+            if (selectedValue === "122850003") { // 'Lockbox' value
+                $("#gt_lockboxlocation").closest("tr").show();
+                $("#gt_lockboxlocation_label").show();
+                MakeRequired(LockboxLocationFieldName);                
+            } else {
+                $("#gt_lockboxlocation").val('');
+                $("#gt_lockboxlocation").closest("tr").hide();
+                $("#gt_lockboxlocation_label").hide();  
+                MakeNotRequired(LockboxLocationFieldName);               
+            }            
+         }
+
+         // Function to toggle Other Access Method visibility
+         function toggleOtherAccessMethod() {
+            var selectedValue = getControlValue("gt_gardenlockmethod");
+            
+            if (selectedValue === "122850004") { // 'Other' value
+                $("#gt_otheraccessmethod").closest("tr").show();
+                $("#gt_otheraccessmethod_label").show(); 
+                MakeRequired(OtherAccessMethodFieldName);                
+            } else {
+                $("#gt_otheraccessmethod").val('');
+                $("#gt_otheraccessmethod").closest("tr").hide();
+                $("#gt_otheraccessmethod_label").hide();  
+                MakeNotRequired(OtherAccessMethodFieldName);               
+            }
+         }
+
+        //  End of toggle functions
+
+
+      });
+   }(window.jQuery));
+}
