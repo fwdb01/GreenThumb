@@ -1,0 +1,239 @@
+const StreetTreeBedsOtherMaterialsFieldName = "gt_streettreebedsothermaterials";
+const OtherTreeGuardsConditionFieldName = "gt_othertreeguardscondition";
+const TreeBedsNotesFieldName = "gt_treebedsnotes";
+
+// Function to make a field required and add a custom validator
+var MakeRequired = function (fieldName) {
+    try {
+        var $field = $("#" + fieldName);
+        if ($field.length > 0) { 
+            $field.prop('required', true);
+            $field.closest(".control").prev().addClass("required");
+
+            var Requiredvalidator = document.createElement('span');
+            Requiredvalidator.style.display = "none";
+            Requiredvalidator.id = fieldName + "Validator";
+            Requiredvalidator.controltovalidate = fieldName;
+            Requiredvalidator.errormessage = `<a href='#${fieldName}_label'>${$(`#${fieldName}_label`).html()} is a required field.</a>`;
+            Requiredvalidator.initialvalue = "";
+            Requiredvalidator.evaluationfunction = function () {
+                var value = getControlValue(fieldName); 
+                return (value !== null && value !== "");
+            };
+
+            var duplicateFlag = false;
+            if (typeof Page_Validators !== 'undefined' && Page_Validators.length > 0) {
+                for (let i = 0; i < Page_Validators.length; i++) {
+                    if (Requiredvalidator.id === Page_Validators[i].id) {
+                        duplicateFlag = true;
+                        break;
+                    }
+                }
+            }
+
+            if (duplicateFlag === false && typeof Page_Validators !== 'undefined') {
+                Page_Validators.push(Requiredvalidator);
+            }  
+        }
+    }
+    catch (error) {
+        if (typeof errorHandler === 'function') errorHandler(error);
+    }
+};
+
+// Function to make a field not required and remove validators
+var MakeNotRequired = function (fieldName) {
+    try {
+        var $field = $("#" + fieldName);
+        if ($field.length > 0) { 
+            $field.closest(".control").prev().removeClass("required");
+            $field.prop('required', false);
+
+            if (typeof Page_Validators !== 'undefined') {
+                for (var i = 0; i < Page_Validators.length; i++) {
+                    if (Page_Validators[i].id === fieldName + "Validator") {
+                        Page_Validators.splice(i, 1);
+                        break; 
+                    }
+                }
+            }
+        }
+    }
+    catch (error) {
+        if (typeof errorHandler === 'function') errorHandler(error);
+    }
+};
+
+// Universal Helper utility to extract Choice values accurately on both Desktop & Mobile layouts
+var getControlValue = function (fieldName) {
+    var $el = $("#" + fieldName);
+    if ($el.length === 0) return "";
+    
+    if ($el.is("select")) {
+        return $el.val() || "";
+    }
+    
+    var $checkedRadio = $("input[name='" + fieldName + "']:checked");
+    if ($checkedRadio.length > 0) {
+        return $checkedRadio.val() || "";
+    }
+    
+    return $el.val() || "";
+};
+
+// Add First Breadcrumb to Step 3 of SIF
+let displayFirstBreadcrumb = function(){
+    let imgPath =  `/GT-Site-Visits-Multistep-Form/GT-Breadcrumbs_0`;
+    console.log("Perimeter & Signage" );
+    
+    var $wizardBar = $(".progress-indicator, .wizard-steps, ul.nav-tabs, .crmEntityFormView .steps");
+    
+    if($wizardBar.length > 0) {
+        let active_index = $wizardBar.find(".active").index();
+
+        $wizardBar.find("li").each(function(){
+            let curr_index = $(this).index();
+
+            if($(this).hasClass("active")){
+                $wizardBar.find("li:not(.active)").addClass("text-muted hidden").removeClass("incomplete");
+                $(this).addClass("new-breadcrumb-active").removeClass("active"); 
+                $(this).html(`<img src=${imgPath}${curr_index}.png class=hero-image>`); 
+                console.log("This is the dynamic function");
+            }
+            if(curr_index > active_index ){
+                console.log(curr_index + "vs" + active_index );
+                $(this).addClass("hidden");
+            }
+        });
+    }
+};
+
+if (window.jQuery) {
+   (function ($) {
+
+        // Override the default validation function for subgrids
+        webFormClientValidate = function () {
+            var subgridsToValidate = [
+                { id: "Sidewalk_Subgrid", name: "Sidewalk Conditions & Photos" }
+            ];
+
+            for (var i = 0; i < subgridsToValidate.length; i++) {
+                var subgrid = subgridsToValidate[i];
+        
+                if ($("#" + subgrid.id + " tr").length <= 1) {
+                    showValidationModal("Please add at least one record to the " + subgrid.name + " section.", subgrid.id);
+                    return false; 
+                }
+            }
+            return true; 
+        };
+
+        $(document).ready(function () {
+            displayFirstBreadcrumb();
+
+            $("#gt_inspectionstatus").closest("tr").hide(); 
+            var InspectionStatusValue = $("#gt_inspectionstatus").val();  
+
+            if (InspectionStatusValue == "122850001") { 
+                if (typeof applyAllReadOnlyFixes === 'function') applyAllReadOnlyFixes();
+            } 
+               
+            var modalHtml = `
+            <div class="modal fade" id="universalModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header"><h4 class="modal-title">Action Required</h4></div>
+                        <div id="universalModalBody" class="modal-body"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" data-bs-dismiss="modal">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;  
+            $('body').append(modalHtml);
+
+            window.showValidationModal = function(message, subgridId) {
+                $('#universalModalBody').text(message);
+                $('#universalModal').modal('show');
+        
+                $('#universalModal').one('hidden.bs.modal', function () {
+                    setTimeout(function() {
+                        var grid = $("#" + subgridId).find(".entity-grid, .view-grid").first();
+                        var addButton = $("#" + subgridId).find(".btn-primary, .action-link").first();
+
+                        if (addButton.length > 0) {
+                            addButton.focus(); 
+                        } else if (grid.length > 0) {
+                            grid.attr("tabindex", -1).focus(); 
+                        } else {
+                            $("#" + subgridId).attr("tabindex", -1).focus();
+                        }
+                    }, 200); 
+                });
+            };
+
+            // Input Event Handlers
+            $("#gt_numberofemptystreettreebeds").on("input", function () {
+                this.value = this.value.replace(/\D/g, '');
+            });    
+
+            // 1. Run initial check when form loads
+            toggleTreeGuardRelatedFields(); 
+
+            // 2. Bind change event handler targeting both desktop and mobile layouts
+            $(document).on("change", "#gt_treeguard, input[name='gt_treeguard']", function() {
+                toggleTreeGuardRelatedFields(); 
+            });
+        
+            // 3. Conditional Visibility Function
+            function toggleTreeGuardRelatedFields() {
+                var selectedValue = getControlValue("gt_treeguard");
+                
+                // If value is blank ("Select") or explicitly unselected, completely hide the fields
+                if (selectedValue === "" || selectedValue === null) {
+                    hideAndClearTreeFields();
+                    return;
+                }
+
+                // Replace '122850000' with the actual value matching "Yes" in your system.
+                if (selectedValue === "122850000") { 
+                    
+                    // Show dependent fields cleanly by their table rows
+                    $("#gt_streettreebedsothermaterials").closest("tr").show();
+                    $("#gt_streettreebedsothermaterials_label").show();
+                    
+                    $("#gt_othertreeguardscondition").closest("tr").show();
+                    $("#gt_othertreeguardscondition_label").show();
+                    
+                    $("#gt_treebedsnotes").closest("tr").show();
+                    $("#gt_treebedsnotes_label").show();
+                    
+                    MakeRequired(StreetTreeBedsOtherMaterialsFieldName);
+                } else {
+                    // Handles when "No" or any other option is picked
+                    hideAndClearTreeFields();
+                }
+            }
+
+            // Helper function to safely hide fields, reset values, and clear validations
+            function hideAndClearTreeFields() {
+                $("#gt_streettreebedsothermaterials").val('').closest("tr").hide();
+                $("#gt_streettreebedsothermaterials_label").hide();
+                MakeNotRequired(StreetTreeBedsOtherMaterialsFieldName);
+                
+                var $otherCondition = $("#gt_othertreeguardscondition");
+                if ($otherCondition.is("select")) {
+                    $otherCondition.prop('selectedIndex', -1);
+                } else {
+                    $("input[name='gt_othertreeguardscondition']").prop('checked', false);
+                }
+                $otherCondition.closest("tr").hide();
+                $("#gt_othertreeguardscondition_label").hide();
+                MakeNotRequired(OtherTreeGuardsConditionFieldName);
+                
+                $("#gt_treebedsnotes").val('').closest("tr").hide();
+                $("#gt_treebedsnotes_label").hide();
+                MakeNotRequired(TreeBedsNotesFieldName);
+            }
+
+});}(window.jQuery));}
